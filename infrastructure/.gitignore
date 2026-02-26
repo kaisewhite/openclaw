@@ -1,0 +1,18 @@
+node_modules
+cdk.out
+*.js
+*.d.ts
+*.js.map
+.DS_Store
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local secret manifests (keep examples in git)
+properties/secrets/*.secrets.json
+!properties/secrets/*.secrets.example.json
+
+# Local credential notes/dumps
+prompts/agents/credentials/*.md

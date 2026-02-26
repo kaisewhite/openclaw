@@ -1,0 +1,28 @@
+{
+  "display_information": {
+    "name": "Linear Dispatcher",
+    "description": "Slack notifier for Linear assignment events"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "Linear Dispatcher",
+      "always_online": false
+    },
+    "app_home": {
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": true
+    }
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "chat:write"
+      ]
+    }
+  },
+  "settings": {
+    "socket_mode_enabled": false,
+    "is_hosted": false,
+    "token_rotation_enabled": false
+  }
+}
