@@ -183,6 +183,7 @@ export class AgentFargateStack extends cdk.Stack {
       cluster: props.cluster,
       taskDefinition,
       desiredCount: props.agent.runtime.desiredCount,
+      healthCheckGracePeriod: cdk.Duration.minutes(10),
       assignPublicIp: true,
       vpcSubnets: { subnets },
       securityGroups: [props.taskSecurityGroup],
