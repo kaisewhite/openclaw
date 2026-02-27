@@ -55,6 +55,7 @@ const defaultRequiredSecretKeys = [
   "SLACK_BOT_TOKEN",
   "SLACK_APP_TOKEN",
   "LINEAR_API_KEY",
+  "BRAVE_API_KEY",
   "GMAIL_EMAIL",
   "GMAIL_PASSWORD",
 ];
