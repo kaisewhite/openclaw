@@ -55,7 +55,7 @@ const defaultRequiredSecretKeys = [
   "SLACK_BOT_TOKEN",
   "SLACK_APP_TOKEN",
   "LINEAR_API_KEY",
-  "BRAVE_API_KEY",
+  "GEMINI_API_KEY",
   "GMAIL_EMAIL",
   "GMAIL_PASSWORD",
 ];
@@ -68,6 +68,28 @@ const defaultSlackOverrides = {
       groupPolicy: "open",
     },
   },
+} as const;
+
+const defaultSkillsOverrides = {
+  skills: {
+    load: {
+      extraDirs: ["/opt/openclaw/skills"],
+    },
+  },
+} as const;
+
+const defaultPluginsOverrides = {
+  plugins: {
+    slots: {
+      memory: "memory-core",
+    },
+  },
+} as const;
+
+const defaultOpenclawOverrides = {
+  ...defaultSlackOverrides,
+  ...defaultSkillsOverrides,
+  ...defaultPluginsOverrides,
 } as const;
 
 export const project: Project = {
@@ -95,7 +117,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/architect-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
-        configOverrides: defaultSlackOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
@@ -119,7 +141,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/senior-fullstack-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
-        configOverrides: defaultSlackOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
@@ -143,7 +165,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/qa-automation-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
-        configOverrides: defaultSlackOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
@@ -167,7 +189,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/product-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
-        configOverrides: defaultSlackOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",

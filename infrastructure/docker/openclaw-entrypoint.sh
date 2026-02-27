@@ -32,7 +32,7 @@ normalize_bind() {
 }
 
 verify_required_bins() {
-  local required="${OPENCLAW_REQUIRED_BINS:-node npm pnpm git gh jq yq rg fd curl wget unzip zip tar python3 aws make shellcheck yamllint pre-commit}"
+  local required="${OPENCLAW_REQUIRED_BINS:-node npm pnpm bun bunx git gh lin jq yq rg fd curl wget unzip zip tar python3 aws sam poetry nodemon make shellcheck yamllint pre-commit sqlite3 psql mysql redis-cli dig nc lsof}"
   local missing=()
   local bin
   for bin in ${required}; do

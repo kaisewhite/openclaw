@@ -15,6 +15,7 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 ## Source Of Truth
 - Agent definitions: [properties/index.ts](./properties/index.ts)
 - Agent prompts: [agent-assets/agents](./agent-assets/agents)
+- Agent skills: [agent-assets/skills](./agent-assets/skills)
 - Slack app manifests: [agent-assets/agents/manifests](./agent-assets/agents/manifests)
 - Agent credentials stubs: [agent-assets/agents/credentials](./agent-assets/agents/credentials)
 
@@ -105,14 +106,28 @@ npx cdk deploy
 
 ## Docker Toolchain Baseline
 The wrapped image pre-installs:
-- `node`, `npm`, `pnpm`
+- `node`, `npm`, `pnpm`, `bun`, `bunx`, `nodemon`
 - `git`, `git-lfs`, `gh`
+- `lin` (Linear CLI)
 - `jq`, `yq`, `rg`, `fd`
 - `curl`, `wget`, `unzip`, `zip`, `tar`
-- `python3`, `pip`, `venv`
+- `python3`, `pip`, `venv`, `poetry`
 - `make`, `build-essential`
-- `aws`
+- `aws`, `sam`
+- `sqlite3`, `psql`, `mysql`, `redis-cli`
+- `dig`, `nc`, `lsof`, `ping`
 - `shellcheck`, `yamllint`, `pre-commit`
+
+Browser testing baseline:
+- Build script defaults `OPENCLAW_INSTALL_BROWSER=1`, which bakes Chromium + Playwright runtime deps into the base image.
+- Override with `OPENCLAW_INSTALL_BROWSER=0` only when you explicitly want a smaller image.
+
+Skills baseline:
+- All skills in [agent-assets/skills](./agent-assets/skills) are baked into the image at `/opt/openclaw/skills`.
+- Agents load these automatically via `skills.load.extraDirs` in `properties/index.ts`.
+
+Plugin baseline:
+- Memory Core plugin is explicitly selected by default via `plugins.slots.memory = "memory-core"` in `properties/index.ts`.
 
 At startup, the entrypoint verifies required binaries and fails fast if missing.
 

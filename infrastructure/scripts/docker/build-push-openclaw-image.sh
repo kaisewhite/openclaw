@@ -14,6 +14,7 @@ IMAGE_TAG="${OPENCLAW_IMAGE_TAG:-latest}"
 BASE_IMAGE_TAG="${OPENCLAW_BASE_IMAGE_TAG:-openclaw-base:local}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64}"
 CLUSTER_NAME="${OPENCLAW_ECS_CLUSTER:-openclaw}"
+OPENCLAW_INSTALL_BROWSER="${OPENCLAW_INSTALL_BROWSER:-1}"
 
 if ! command -v aws >/dev/null 2>&1; then
   echo "ERROR: aws CLI not found." >&2
@@ -32,6 +33,7 @@ ECR_IMAGE="${ECR_REGISTRY}/${REPOSITORY_NAME}:${IMAGE_TAG}"
 echo "==> Building OpenClaw base image from source: ${BASE_IMAGE_TAG}"
 docker build \
   --platform "$DOCKER_PLATFORM" \
+  --build-arg "OPENCLAW_INSTALL_BROWSER=${OPENCLAW_INSTALL_BROWSER}" \
   -t "$BASE_IMAGE_TAG" \
   -f "$OPENCLAW_DIR/Dockerfile" \
   "$OPENCLAW_DIR"
