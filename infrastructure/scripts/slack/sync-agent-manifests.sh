@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-MANIFESTS_DIR="$ROOT_DIR/prompts/agents/manifests"
-CREDENTIALS_DIR="$ROOT_DIR/prompts/agents/credentials"
+MANIFESTS_DIR="$ROOT_DIR/agent-assets/agents/manifests"
+CREDENTIALS_DIR="$ROOT_DIR/agent-assets/agents/credentials"
 MODE="upsert"
 DRY_RUN="false"
 SLACK_TOKEN="${SLACK_APP_MANIFEST_TOKEN:-}"
@@ -18,8 +18,8 @@ Required:
 Options:
   --mode                      upsert (default), create, update
   --dry-run                   Validate manifests only; do not create/update
-  --manifests-dir             Defaults to prompts/agents/manifests
-  --credentials-dir           Defaults to prompts/agents/credentials
+  --manifests-dir             Defaults to agent-assets/agents/manifests
+  --credentials-dir           Defaults to agent-assets/agents/credentials
 
 Notes:
   - Uses Slack Web API methods: apps.manifest.validate/create/update

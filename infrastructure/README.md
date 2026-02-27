@@ -14,9 +14,9 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 
 ## Source Of Truth
 - Agent definitions: [properties/index.ts](./properties/index.ts)
-- Agent prompts: [prompts/agents](./prompts/agents)
-- Slack app manifests: [prompts/agents/manifests](./prompts/agents/manifests)
-- Agent credentials stubs: [prompts/agents/credentials](./prompts/agents/credentials)
+- Agent prompts: [agent-assets/agents](./agent-assets/agents)
+- Slack app manifests: [agent-assets/agents/manifests](./agent-assets/agents/manifests)
+- Agent credentials stubs: [agent-assets/agents/credentials](./agent-assets/agents/credentials)
 
 ## Prerequisites
 - AWS CLI authenticated for account `CDK_DEFAULT_ACCOUNT`.
@@ -43,7 +43,7 @@ Scripts:
 6. Configure Linear webhook to the Lambda Function URL output.
 
 ## Slack Manifests
-Manifests live in [prompts/agents/manifests](./prompts/agents/manifests), including:
+Manifests live in [agent-assets/agents/manifests](./agent-assets/agents/manifests), including:
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`
 - `qa-agent.manifest.json`

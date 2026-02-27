@@ -1,0 +1,5 @@
+appId:A0AGQABEQRM
+clientId:5371920414193.10568351500871
+clientSecret:d39e88d4920654143e28cff4589d3176
+signingSecret:3b0996e96d1723e31f987149e1bd48f7
+verificationToken:thHcNYDjchHnyRl6ubm1vlhC

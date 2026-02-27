@@ -91,7 +91,7 @@ export const project: Project = {
         model: "claude-opus-4-5",
       },
       openclaw: {
-        soulPromptPath: "prompts/agents/architect-agent.md",
+        soulPromptPath: "agent-assets/agents/architect-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultSlackOverrides,
@@ -115,7 +115,7 @@ export const project: Project = {
         model: "claude-opus-4-5",
       },
       openclaw: {
-        soulPromptPath: "prompts/agents/senior-fullstack-agent.md",
+        soulPromptPath: "agent-assets/agents/senior-fullstack-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultSlackOverrides,
@@ -139,7 +139,7 @@ export const project: Project = {
         model: "gpt-5.1-codex",
       },
       openclaw: {
-        soulPromptPath: "prompts/agents/qa-automation-agent.md",
+        soulPromptPath: "agent-assets/agents/qa-automation-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultSlackOverrides,
@@ -163,7 +163,7 @@ export const project: Project = {
         model: "claude-sonnet-4-5",
       },
       openclaw: {
-        soulPromptPath: "prompts/agents/product-agent.md",
+        soulPromptPath: "agent-assets/agents/product-agent.md",
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultSlackOverrides,
