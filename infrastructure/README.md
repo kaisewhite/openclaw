@@ -129,6 +129,10 @@ Skills baseline:
 Plugin baseline:
 - Memory Core plugin is explicitly selected by default via `plugins.slots.memory = "memory-core"` in `properties/index.ts`.
 
+Slack rendering baseline:
+- Slack live preview streaming is disabled by default (`channels.slack.streaming = "off"`).
+- This ensures final responses are delivered through OpenClaw's Markdown-to-Slack mrkdwn conversion path for cleaner formatting.
+
 At startup, the entrypoint verifies required binaries and fails fast if missing.
 
 ## Linear Webhook
