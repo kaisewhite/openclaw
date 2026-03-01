@@ -94,6 +94,14 @@ export class AgentFargateStack extends cdk.Stack {
     executionRole.addToPolicy(secretReadPolicy);
     taskRole.addToPolicy(secretReadPolicy);
 
+    const route53DomainAvailabilityPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["route53domains:CheckDomainAvailability", "route53domains:GetDomainSuggestions"],
+      resources: ["*"],
+    });
+
+    taskRole.addToPolicy(route53DomainAvailabilityPolicy);
+
     const logGroup = new logs.LogGroup(this, `${prefix}-log-group`, {
       logGroupName: `/aws/ecs/openclaw/${props.agent.id}`,
       retention: logs.RetentionDays.ONE_MONTH,
