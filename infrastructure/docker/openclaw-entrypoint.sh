@@ -48,11 +48,40 @@ verify_required_bins() {
   fi
 }
 
+cleanup_stale_session_locks() {
+  local lock_ttl_seconds="${OPENCLAW_SESSION_LOCK_TTL_SECONDS:-300}"
+  local now_epoch
+  now_epoch="$(date +%s)"
+  local removed=0
+
+  shopt -s nullglob
+  local lock_file
+  for lock_file in "${OPENCLAW_STATE_DIR}"/agents/*/sessions/*.jsonl.lock; do
+    [ -f "${lock_file}" ] || continue
+
+    local lock_mtime
+    lock_mtime="$(stat -c %Y "${lock_file}" 2>/dev/null || echo 0)"
+    local lock_age=$((now_epoch - lock_mtime))
+
+    if [ "${lock_age}" -ge "${lock_ttl_seconds}" ]; then
+      rm -f "${lock_file}"
+      removed=$((removed + 1))
+      echo "[bootstrap] Removed stale session lock: ${lock_file} (age=${lock_age}s, ttl=${lock_ttl_seconds}s)"
+    fi
+  done
+  shopt -u nullglob
+
+  if [ "${removed}" -gt 0 ]; then
+    echo "[bootstrap] Stale session lock cleanup completed (removed=${removed})"
+  fi
+}
+
 OPENCLAW_STATE_DIR="$(resolve_state_dir)"
 export OPENCLAW_STATE_DIR
 export OPENCLAW_CONFIG_PATH="${OPENCLAW_CONFIG_PATH:-${OPENCLAW_STATE_DIR}/openclaw.json}"
 
 verify_required_bins
+cleanup_stale_session_locks
 
 echo "[bootstrap] Reconciling OpenClaw runtime config"
 node /usr/local/bin/openclaw-bootstrap.mjs
