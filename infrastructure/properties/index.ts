@@ -66,6 +66,8 @@ const defaultSlackOverrides = {
       dmPolicy: "open",
       allowFrom: ["*"],
       groupPolicy: "open",
+      streaming: "off",
+      nativeStreaming: false,
     },
   },
 } as const;
@@ -105,8 +107,8 @@ export const project: Project = {
       displayName: "Architect Agent",
       description: "Architecture and technical design review agent",
       runtime: {
-        cpu: 512,
-        memoryLimitMiB: 1024,
+        cpu: 2048,
+        memoryLimitMiB: 4096,
         desiredCount: 1,
       },
       model: {
@@ -129,8 +131,8 @@ export const project: Project = {
       displayName: "Fullstack Agent",
       description: "Implementation and delivery agent",
       runtime: {
-        cpu: 1024,
-        memoryLimitMiB: 2048,
+        cpu: 4096,
+        memoryLimitMiB: 8192,
         desiredCount: 1,
       },
       model: {
@@ -153,8 +155,8 @@ export const project: Project = {
       displayName: "QA Agent",
       description: "Automated quality and regression gate",
       runtime: {
-        cpu: 512,
-        memoryLimitMiB: 1024,
+        cpu: 2048,
+        memoryLimitMiB: 4096,
         desiredCount: 1,
       },
       model: {
@@ -177,8 +179,8 @@ export const project: Project = {
       displayName: "PM Agent",
       description: "Product discovery and requirements agent",
       runtime: {
-        cpu: 512,
-        memoryLimitMiB: 1024,
+        cpu: 2048,
+        memoryLimitMiB: 4096,
         desiredCount: 1,
       },
       model: {
