@@ -94,6 +94,16 @@ const defaultOpenclawOverrides = {
   ...defaultPluginsOverrides,
 } as const;
 
+const architectSubagentOverrides = {
+  ...defaultOpenclawOverrides,
+  subagents: {
+    allowAgents: ["fullstack-agent", "qa-agent", "pm-agent"],
+    maxConcurrent: 3,
+    runTimeoutSeconds: 900,
+    archiveAfterMinutes: 60,
+  },
+} as const;
+
 export const project: Project = {
   name: "openclaw",
   envs: ["mgmt"],
@@ -118,8 +128,8 @@ export const project: Project = {
       openclaw: {
         soulPromptPath: "agent-assets/agents/architect-agent.md",
         allowTools: ["*"],
-        denyTools: ["agentToAgent"],
-        configOverrides: defaultOpenclawOverrides,
+        denyTools: [],
+        configOverrides: architectSubagentOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
