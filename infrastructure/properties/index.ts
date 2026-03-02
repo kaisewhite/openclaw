@@ -97,7 +97,7 @@ const defaultOpenclawOverrides = {
 const architectSubagentOverrides = {
   ...defaultOpenclawOverrides,
   subagents: {
-    allowAgents: ["fullstack-agent", "qa-agent", "pm-agent"],
+    allowAgents: ["architect-agent"],  // spawn sub-agents under own identity
     maxConcurrent: 3,
     runTimeoutSeconds: 900,
     archiveAfterMinutes: 60,
@@ -117,8 +117,8 @@ export const project: Project = {
       displayName: "Architect Agent",
       description: "Architecture and technical design review agent",
       runtime: {
-        cpu: 2048,
-        memoryLimitMiB: 4096,
+        cpu: 4096,
+        memoryLimitMiB: 8192,
         desiredCount: 1,
       },
       model: {
