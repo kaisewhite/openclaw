@@ -55,6 +55,7 @@ const defaultRequiredSecretKeys = [
   "SLACK_BOT_TOKEN",
   "SLACK_APP_TOKEN",
   "LINEAR_API_KEY",
+  "NOTION_API_KEY",
   "GEMINI_API_KEY",
   "GMAIL_EMAIL",
   "GMAIL_PASSWORD",
@@ -96,21 +97,27 @@ const defaultOpenclawOverrides = {
 
 const architectSubagentOverrides = {
   ...defaultOpenclawOverrides,
-  subagents: {
-    allowAgents: ["architect-agent"],  // spawn sub-agents under own identity
-    maxConcurrent: 3,
-    runTimeoutSeconds: 900,
-    archiveAfterMinutes: 60,
+  agents: {
+    defaults: {
+      subagents: {
+        maxConcurrent: 3,
+        runTimeoutSeconds: 900,
+        archiveAfterMinutes: 60,
+      },
+    },
   },
 } as const;
 
 const fullstackSubagentOverrides = {
   ...defaultOpenclawOverrides,
-  subagents: {
-    allowAgents: ["fullstack-agent"],  // spawn sub-agents under own identity
-    maxConcurrent: 3,
-    runTimeoutSeconds: 900,
-    archiveAfterMinutes: 60,
+  agents: {
+    defaults: {
+      subagents: {
+        maxConcurrent: 3,
+        runTimeoutSeconds: 900,
+        archiveAfterMinutes: 60,
+      },
+    },
   },
 } as const;
 

@@ -113,3 +113,77 @@
 - Validation evidence:
   - `python3 -m py_compile infrastructure/resources/lambda/lambda_code/app.py` passes.
   - Diff confirms all soul prompts and lambda message/routing paths were updated as intended.
+
+## Plan: Fix Invalid Root-Level Subagents Override
+
+- [x] Move `subagents` override under schema-valid `agents.defaults.subagents`.
+- [x] Verify no root-level `subagents` override remains in agent config overrides.
+- [x] Run `cdk synth` to validate generated stack/config remains valid.
+
+## Review: Fix Invalid Root-Level Subagents Override
+
+- Updated `infrastructure/properties/index.ts`:
+  - `architectSubagentOverrides` now uses `agents.defaults.subagents`.
+  - `fullstackSubagentOverrides` now uses `agents.defaults.subagents`.
+- Verification:
+  - `rg -n "\\bsubagents\\b" infrastructure/properties/index.ts` only shows nested `subagents` entries.
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.
+
+## Plan: Notion Access Documentation
+
+- [x] Review current infra docs and OpenClaw Notion skill requirements.
+- [x] Add a dedicated markdown runbook describing end-to-end Notion access enablement for agents.
+- [x] Link the runbook from infrastructure README.
+- [x] Validate paths and references.
+
+## Review: Notion Access Documentation
+
+- Added runbook: `infrastructure/docs/notion-agent-access.md`.
+- Runbook covers:
+  - Notion integration creation
+  - page/data source sharing requirements
+  - adding `NOTION_API_KEY` in agent secret payloads
+  - mapping `NOTION_API_KEY` in `properties/index.ts` (`requiredKeys`/`optionalKeys`)
+  - deploy + runtime/API verification
+  - troubleshooting paths for 401/403/missing env
+- Added README link under `Source Of Truth`:
+  - `infrastructure/README.md` now points to the Notion runbook.
+
+## Plan: Add Notion API Key To CDK Agent Secrets
+
+- [x] Add `NOTION_API_KEY` to default agent required secret keys in CDK properties.
+- [x] Add `NOTION_API_KEY` to the agent secrets example manifest for all agents.
+- [x] Update infrastructure README required keys list.
+- [x] Run `cdk synth` to validate stack generation.
+
+## Review: Add Notion API Key To CDK Agent Secrets
+
+- Updated `infrastructure/properties/index.ts`:
+  - `defaultRequiredSecretKeys` now includes `NOTION_API_KEY`, so all agents receive it via ECS secret injection.
+- Updated `infrastructure/properties/secrets/agents.secrets.example.json`:
+  - added `NOTION_API_KEY` under each agent's `values` block.
+- Updated `infrastructure/README.md` required key list to include `NOTION_API_KEY`.
+- Verification:
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.
+
+## Plan: Diagnose Fullstack Agent Circuit Breaker Rollback
+
+- [x] Pull ECS service deployment events for `fullstack-agent`.
+- [x] Inspect failed task stop reasons and container exit data.
+- [x] Inspect container logs for failed task attempts.
+- [x] Patch invalid OpenClaw subagent config key causing startup failure.
+- [x] Run `cdk synth` to validate post-fix stack generation.
+
+## Review: Diagnose Fullstack Agent Circuit Breaker Rollback
+
+- Deployment `ecs-svc/6440272065184171619` failed with repeated task starts on task definition `mgmt-fullstack-agent:13`, then circuit breaker rollback.
+- Failed task logs showed:
+  - `Invalid config at /home/node/.openclaw/openclaw.json`
+  - `agents.defaults.subagents: Unrecognized key: "allowAgents"`
+- Root cause:
+  - `allowAgents` was set under `agents.defaults.subagents`, but OpenClaw schema only permits `allowAgents` in per-agent runtime subagent config (`agents.list[].subagents`), not defaults.
+- Fix applied:
+  - Removed invalid `allowAgents` from both `architectSubagentOverrides` and `fullstackSubagentOverrides`.
+  - Kept valid defaults (`maxConcurrent`, `runTimeoutSeconds`, `archiveAfterMinutes`).
+- Verification:
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.

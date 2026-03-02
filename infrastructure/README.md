@@ -20,6 +20,11 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 - Agent skills: [agent-assets/skills](./agent-assets/skills)
 - Slack app manifests: [agent-assets/agents/manifests](./agent-assets/agents/manifests)
 - Agent credentials stubs: [agent-assets/agents/credentials](./agent-assets/agents/credentials)
+- Integration runbooks: [docs](./docs)
+
+Notion setup runbook:
+
+- [Notion Access For OpenClaw Agents](./docs/notion-agent-access.md)
 
 ## Prerequisites
 
@@ -79,6 +84,7 @@ If scopes change, reinstall each Slack app.
 - `SLACK_BOT_TOKEN`
 - `SLACK_APP_TOKEN`
 - `LINEAR_API_KEY`
+- `NOTION_API_KEY`
 - `GMAIL_EMAIL`
 - `GMAIL_PASSWORD`
 - provider key (`OPENAI_API_KEY` or `ANTHROPIC_SETUP_TOKEN`)
