@@ -117,8 +117,8 @@ export const project: Project = {
       displayName: "Architect Agent",
       description: "Architecture and technical design review agent",
       runtime: {
-        cpu: 4096,
-        memoryLimitMiB: 8192,
+        cpu: 8192,
+        memoryLimitMiB: 16384,
         desiredCount: 1,
       },
       model: {
