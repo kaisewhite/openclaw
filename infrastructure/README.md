@@ -180,6 +180,63 @@ Use that URL as the webhook target in Linear and set the same webhook secret val
 - Linear comment by non-assignee on an assigned issue triggers a Slack mention.
 - `GITHUB_TOKEN` works (`curl https://api.github.com/user` returns `200`).
 
+## Codex OAuth Setup (Any Agent)
+
+Use this when you want an agent to use a Codex subscription auth profile instead of `OPENAI_API_KEY`.
+
+1. Update the agent model in [properties/index.ts](./properties/index.ts):
+
+- set `model.provider` to `openai-codex`
+- set `model.model` to `gpt-5.3-codex`
+- remove `OPENAI_API_KEY` from that agent's `requiredKeys` (optional fallback only)
+
+2. Deploy the agent stack (example for QA):
+
+```bash
+npx cdk deploy OpenclawStack/openclaw-cdk/openclaw-qa-agent-cdk --profile mostrom_mgmt --require-approval never
+```
+
+3. Exec into the running container:
+
+```bash
+AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs list-tasks \
+  --cluster openclaw --service-name qa-agent --desired-status RUNNING --query 'taskArns[0]' --output text
+
+AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs execute-command \
+  --cluster openclaw \
+  --task <TASK_ID_OR_ARN> \
+  --container mgmt-qa-agent-container \
+  --interactive \
+  --command "/bin/bash"
+```
+
+4. Inside the container, run Codex OAuth onboarding:
+
+```bash
+export OPENCLAW_STATE_DIR=/home/node/.openclaw
+export OPENCLAW_CONFIG_PATH=/home/node/.openclaw/openclaw.json
+
+node /app/dist/index.js onboard \
+  --auth-choice openai-codex \
+  --skip-channels \
+  --skip-skills \
+  --skip-health \
+  --skip-ui \
+  --no-install-daemon
+```
+
+5. Verify:
+
+```bash
+node /app/dist/index.js models status
+```
+
+Expected result:
+
+- default model resolves to `openai-codex/gpt-5.3-codex`
+- auth store shows `openai-codex:default` as OAuth
+- no dependency on `OPENAI_API_KEY` for that agent
+
 ## Troubleshooting
 
 - `401 Bad credentials` for GitHub: rotate token, push secrets, force ECS new deployment.
