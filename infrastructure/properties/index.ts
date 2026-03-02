@@ -160,8 +160,8 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "openai",
-        model: "gpt-5.1-codex",
+        provider: "openai-codex",
+        model: "gpt-5.3-codex",
       },
       openclaw: {
         soulPromptPath: "agent-assets/agents/qa-automation-agent.md",
@@ -171,7 +171,7 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "OPENAI_API_KEY", "GITHUB_TOKEN"],
+        requiredKeys: [...defaultRequiredSecretKeys, "GITHUB_TOKEN"],
       },
     },
     {
