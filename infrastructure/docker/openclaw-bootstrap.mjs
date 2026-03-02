@@ -49,6 +49,10 @@ const parseJsonEnv = (name, fallback) => {
   }
 };
 
+const isObjectRecord = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const normalizeObjectRecord = (value) => (isObjectRecord(value) ? value : {});
+
 const parseConfigFile = async (filePath) => {
   try {
     const raw = await fs.readFile(filePath, "utf8");
@@ -184,7 +188,10 @@ const bootstrap = async () => {
       ? payload.overrides
       : {};
   const payloadFragment = pickConfigFragment(payload);
-  const authProfiles = parseJsonEnv("OPENCLAW_AUTH_PROFILES_JSON", {});
+  const authProfilesPayload = parseJsonEnv("OPENCLAW_AUTH_PROFILES_JSON", null);
+  const authProfilesPatch = normalizeObjectRecord(authProfilesPayload);
+  const hasAuthProfilesPatch = Object.keys(authProfilesPatch).length > 0;
+  const anthropicSetupToken = process.env.ANTHROPIC_SETUP_TOKEN?.trim() || "";
 
   const modelRef = resolveModelRef(payload);
   const bindMode = normalizeBindMode(process.env.OPENCLAW_GATEWAY_BIND);
@@ -267,7 +274,29 @@ const bootstrap = async () => {
     await writeTextFile(TOOLS_PATH, content);
   }
 
-  await writeJsonFile(AUTH_PROFILES_PATH, authProfiles && typeof authProfiles === "object" ? authProfiles : {});
+  const existingAuthProfiles = normalizeObjectRecord(await parseConfigFile(AUTH_PROFILES_PATH));
+  let nextAuthProfiles = existingAuthProfiles;
+
+  if (hasAuthProfilesPatch) {
+    nextAuthProfiles = deepMerge(nextAuthProfiles, authProfilesPatch);
+  }
+
+  if (anthropicSetupToken) {
+    const previousDefault = normalizeObjectRecord(nextAuthProfiles["anthropic:default"]);
+    nextAuthProfiles = {
+      ...nextAuthProfiles,
+      "anthropic:default": {
+        ...previousDefault,
+        type: "token",
+        provider: "anthropic",
+        token: anthropicSetupToken,
+      },
+    };
+  }
+
+  if (hasAuthProfilesPatch || anthropicSetupToken) {
+    await writeJsonFile(AUTH_PROFILES_PATH, nextAuthProfiles);
+  }
 
   console.log(
     `[bootstrap] Config reconciled for agent '${AGENT_ID}' (workspace='${WORKSPACE_DIR}', config='${CONFIG_PATH}')`,

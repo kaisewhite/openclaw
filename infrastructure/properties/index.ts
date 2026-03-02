@@ -123,7 +123,7 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_API_KEY", "GITHUB_TOKEN"],
+        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
       },
     },
     {
@@ -147,7 +147,7 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_API_KEY", "GITHUB_TOKEN"],
+        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
       },
     },
     {
@@ -195,7 +195,7 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_API_KEY", "GITHUB_TOKEN"],
+        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
       },
     },
   ],

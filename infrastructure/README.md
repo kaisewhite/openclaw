@@ -3,6 +3,7 @@
 Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus a Linear -> Slack dispatcher Lambda.
 
 ## What This Deploys
+
 - One shared ECR repository for the OpenClaw image.
 - One shared ECS cluster.
 - One shared EFS filesystem.
@@ -13,6 +14,7 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 - No ALB, Route53, or public ingress resources.
 
 ## Source Of Truth
+
 - Agent definitions: [properties/index.ts](./properties/index.ts)
 - Agent prompts: [agent-assets/agents](./agent-assets/agents)
 - Agent skills: [agent-assets/skills](./agent-assets/skills)
@@ -20,22 +22,27 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 - Agent credentials stubs: [agent-assets/agents/credentials](./agent-assets/agents/credentials)
 
 ## Prerequisites
+
 - AWS CLI authenticated for account `CDK_DEFAULT_ACCOUNT`.
 - Docker running locally.
 - `jq` installed locally.
 - `CDK_DEFAULT_ACCOUNT`, `CDK_DEFAULT_REGION`, and `MGMT_VPC` set in `.env`.
 
 ## Script Defaults
+
 The operational scripts are intentionally simple and default to:
+
 - `AWS_REGION="us-east-1"`
 - `AWS_PROFILE="mostrom_mgmt"`
 
 Scripts:
+
 - [scripts/secrets/push-agent-secrets.sh](./scripts/secrets/push-agent-secrets.sh)
 - [scripts/secrets/push-integration-secret.sh](./scripts/secrets/push-integration-secret.sh)
 - [scripts/docker/build-push-openclaw-image.sh](./scripts/docker/build-push-openclaw-image.sh)
 
 ## Setup Flow
+
 1. Prepare Slack apps from manifests.
 2. Push agent secrets.
 3. Push Linear dispatcher secret.
@@ -44,7 +51,9 @@ Scripts:
 6. Configure Linear webhook to the Lambda Function URL output.
 
 ## Slack Manifests
+
 Manifests live in [agent-assets/agents/manifests](./agent-assets/agents/manifests), including:
+
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`
 - `qa-agent.manifest.json`
@@ -52,6 +61,7 @@ Manifests live in [agent-assets/agents/manifests](./agent-assets/agents/manifest
 - `linear-dispatcher.manifest.json`
 
 Sync manifests:
+
 ```bash
 ./scripts/slack/sync-agent-manifests.sh
 ```
@@ -59,31 +69,40 @@ Sync manifests:
 If scopes change, reinstall each Slack app.
 
 ## Secrets
+
 ### Agent Secrets
+
 1. Copy [agents.secrets.example.json](./properties/secrets/agents.secrets.example.json) to `agents.secrets.json`.
 2. Fill in real values, including:
+
 - `OPENCLAW_GATEWAY_TOKEN`
 - `SLACK_BOT_TOKEN`
 - `SLACK_APP_TOKEN`
 - `LINEAR_API_KEY`
 - `GMAIL_EMAIL`
 - `GMAIL_PASSWORD`
-- provider key (`OPENAI_API_KEY` or `ANTHROPIC_API_KEY`)
+- provider key (`OPENAI_API_KEY` or `ANTHROPIC_SETUP_TOKEN`)
 - `GITHUB_TOKEN`
+
 3. Push:
+
 ```bash
 ./scripts/secrets/push-agent-secrets.sh
 ```
 
 ### Linear Dispatcher Secret
+
 1. Copy [linear-dispatcher.secrets.example.json](./properties/secrets/linear-dispatcher.secrets.example.json) to `linear-dispatcher.secrets.json`.
 2. Fill in:
+
 - `LINEAR_WEBHOOK_SECRET`
 - `LINEAR_API_KEY`
 - `SLACK_BOT_TOKEN`
 - `SLACK_CHANNEL_ID`
 - assignee map keys
+
 3. Push:
+
 ```bash
 ./scripts/secrets/push-integration-secret.sh
 ```
@@ -91,12 +110,15 @@ If scopes change, reinstall each Slack app.
 Important: keep dispatcher secret values as flat key/value strings. For map values, store JSON as escaped strings.
 
 ## Build And Deploy
+
 Build and push image:
+
 ```bash
 ./scripts/docker/build-push-openclaw-image.sh
 ```
 
 Deploy infrastructure:
+
 ```bash
 npx cdk list
 npx cdk synth
@@ -105,7 +127,9 @@ npx cdk deploy
 ```
 
 ## Docker Toolchain Baseline
+
 The wrapped image pre-installs:
+
 - `node`, `npm`, `pnpm`, `bun`, `bunx`, `nodemon`
 - `git`, `git-lfs`, `gh`
 - `lin` (Linear CLI)
@@ -119,29 +143,36 @@ The wrapped image pre-installs:
 - `shellcheck`, `yamllint`, `pre-commit`
 
 Browser testing baseline:
+
 - Build script defaults `OPENCLAW_INSTALL_BROWSER=1`, which bakes Chromium + Playwright runtime deps into the base image.
 - Override with `OPENCLAW_INSTALL_BROWSER=0` only when you explicitly want a smaller image.
 
 Skills baseline:
+
 - All skills in [agent-assets/skills](./agent-assets/skills) are baked into the image at `/opt/openclaw/skills`.
 - Agents load these automatically via `skills.load.extraDirs` in `properties/index.ts`.
 
 Plugin baseline:
+
 - Memory Core plugin is explicitly selected by default via `plugins.slots.memory = "memory-core"` in `properties/index.ts`.
 
 Slack rendering baseline:
+
 - Slack live preview streaming is disabled by default (`channels.slack.streaming = "off"`).
 - This ensures final responses are delivered through OpenClaw's Markdown-to-Slack mrkdwn conversion path for cleaner formatting.
 
 At startup, the entrypoint verifies required binaries and fails fast if missing.
 
 ## Linear Webhook
+
 The deploy creates a Function URL export:
+
 - `<project>-linear-dispatcher-url`
 
 Use that URL as the webhook target in Linear and set the same webhook secret value in Linear and Secrets Manager.
 
 ## Verification Checklist
+
 - Slack apps connected in Socket Mode for agent bots.
 - Agents respond in Slack channels/DMs.
 - Dispatcher bot can post into target Slack channel.
@@ -150,6 +181,7 @@ Use that URL as the webhook target in Linear and set the same webhook secret val
 - `GITHUB_TOKEN` works (`curl https://api.github.com/user` returns `200`).
 
 ## Troubleshooting
+
 - `401 Bad credentials` for GitHub: rotate token, push secrets, force ECS new deployment.
 - Slack `not_in_channel`: invite bot app to the channel in `SLACK_CHANNEL_ID`.
 - Linear webhook `invalid_signature`: webhook secret mismatch.
