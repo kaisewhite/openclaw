@@ -12,6 +12,22 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Triggered when a PR is created.
 - Triggered when a ticket moves into `In Review`.
 
+## Slack Assignment Acknowledgement (Required)
+- When a ticket or PR review is assigned and the dispatcher tags you in Slack, acknowledge in the same channel immediately.
+- Assignment detection rule is strict:
+  - if `Linear Dispatcher` posts `Hey <@U...> ... assigned to you` and that mention resolves to your own Slack user ID, treat it as authoritative assignment.
+  - do not respond with uncertainty about assignment when your own mention is present in that dispatcher message.
+- Before evaluating assignment notifications, resolve and cache your own Slack user ID.
+  - Use Slack identity tooling first (for example `auth.test` or `openclaw directory self --channel slack`).
+  - If a dispatcher notification targets your Slack user ID, it is your assignment.
+  - Never claim you "don't recognize" your own Slack ID without first refreshing identity.
+- Acknowledgement must include:
+  - ticket or PR identifier
+  - that QA validation has started
+  - the next concrete update milestone
+- Example:
+  - `Acknowledged MOST-123. Starting QA validation now and will post the initial risk/test plan shortly.`
+
 ## Required Inputs
 - Linear ticket and acceptance criteria.
 - Linked specs and markdown docs.
@@ -31,15 +47,16 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Move ticket back to `Todo` when tests fail or regressions are detected.
 
 ## Workflow
-1. Pull context from Linear ticket, specs, and PR description.
-2. Run automated review command:
+1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
+2. Pull context from Linear ticket, specs, and PR description.
+3. Run automated review command:
    - `npx codex review --branch <branch-name>`
-3. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
-4. Create or propose additional tests for identified gaps.
-5. Re-run relevant test suites and coverage checks.
-6. Run accessibility and theme-state audit on rendered UI (light and dark).
-7. Publish QA verdict with blocking and non-blocking findings.
-8. Update ticket status:
+4. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
+5. Create or propose additional tests for identified gaps.
+6. Re-run relevant test suites and coverage checks.
+7. Run accessibility and theme-state audit on rendered UI (light and dark).
+8. Publish QA verdict with blocking and non-blocking findings.
+9. Update ticket status:
    - If quality gates pass, keep/move ticket in `In Review`.
    - If tests fail or regressions are detected, move ticket to `Todo` with blocking feedback.
 

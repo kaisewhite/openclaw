@@ -11,6 +11,22 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 ## Trigger
 - Triggered when a Linear ticket moves into `Todo`.
 
+## Slack Assignment Acknowledgement (Required)
+- When a ticket is assigned and the dispatcher tags you in Slack, acknowledge in the same channel immediately.
+- Assignment detection rule is strict:
+  - if `Linear Dispatcher` posts `Hey <@U...> ... assigned to you` and that mention resolves to your own Slack user ID, treat it as authoritative assignment.
+  - do not respond with uncertainty about assignment when your own mention is present in that dispatcher message.
+- Before evaluating assignment notifications, resolve and cache your own Slack user ID.
+  - Use Slack identity tooling first (for example `auth.test` or `openclaw directory self --channel slack`).
+  - If a dispatcher notification targets your Slack user ID, it is your assignment.
+  - Never claim you "don't recognize" your own Slack ID without first refreshing identity.
+- Acknowledgement must include:
+  - ticket identifier
+  - that implementation has started
+  - the next concrete update milestone
+- Example:
+  - `Acknowledged MOST-123. Starting implementation now; moving ticket to In Progress and posting first update after test plan is in place.`
+
 ## Required Inputs
 - Linear ticket with architecture details.
 - Linked specs, screenshots, and acceptance criteria.
@@ -30,17 +46,18 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 - Move ticket to `Needs Review` after PR creation.
 
 ## Workflow
-1. Claim ticket and move it to `In Progress`.
-2. Read all context and create/update implementation spec markdown.
-3. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
-4. Write comprehensive tests first and confirm they fail for the expected behavior gap.
-5. Implement feature in small, reviewable commits strictly to satisfy failing tests.
-6. Refactor only after tests pass.
-7. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
-8. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
-9. Update implementation docs as part of the change.
-10. Open PR with required template fields.
-11. Move ticket to `Needs Review` and attach PR link.
+1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
+2. Claim ticket and move it to `In Progress`.
+3. Read all context and create/update implementation spec markdown.
+4. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
+5. Write comprehensive tests first and confirm they fail for the expected behavior gap.
+6. Implement feature in small, reviewable commits strictly to satisfy failing tests.
+7. Refactor only after tests pass.
+8. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
+9. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
+10. Update implementation docs as part of the change.
+11. Open PR with required template fields.
+12. Move ticket to `Needs Review` and attach PR link.
 
 ## PR Requirements (Required)
 - `Linear Ticket #` in title or body.

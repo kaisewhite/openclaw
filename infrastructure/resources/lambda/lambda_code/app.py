@@ -201,24 +201,28 @@ def _issue_line(issue_data: Dict[str, Any], fallback_url: str = "") -> str:
     return f"<{issue_url}|{issue_title}>" if issue_url else issue_title
 
 
+def _extract_assignee_email(issue_data: Dict[str, Any]) -> str:
+    if not isinstance(issue_data, dict):
+        return ""
+    assignee = issue_data.get("assignee") if isinstance(issue_data.get("assignee"), dict) else {}
+    return str(assignee.get("email") or "").strip().lower()
+
+
 def _slack_escape(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _build_assignment_message(payload: Dict[str, Any], slack_user_id: str, route_reason: str) -> str:
-    issue_data = payload.get("data") or {}
-    if not isinstance(issue_data, dict):
-        issue_data = {}
-    action = _slack_escape(str(payload.get("action") or "update"))
+def _build_assignment_message(payload: Dict[str, Any], issue_data: Dict[str, Any], slack_user_id: str) -> str:
     issue_line = _issue_line(issue_data, str(payload.get("url") or "").strip())
+    assignee_email = _extract_assignee_email(issue_data)
 
-    return "\n".join(
-        [
-            f"<@{slack_user_id}> Linear issue assignment update",
-            f"*Issue:* {issue_line}",
-            f"*Event:* `{action}` (route: `{_slack_escape(route_reason)}`)",
-        ]
-    )
+    lines = [
+        f"Hey <@{slack_user_id}> a new issue has been assigned to you.",
+        f"*Issue:* {issue_line}",
+    ]
+    if assignee_email:
+        lines.append(f"*Assigned Identity:* `{_slack_escape(assignee_email)}`")
+    return "\n".join(lines)
 
 
 def _truncate_single_line(text: str, max_chars: int = 240) -> str:
@@ -347,12 +351,10 @@ def _build_comment_message(
     payload: Dict[str, Any],
     issue_data: Dict[str, Any],
     slack_user_id: str,
-    route_reason: str,
     commenter_display: str,
     comment_body: str,
     comment_url: str,
 ) -> str:
-    action = _slack_escape(str(payload.get("action") or "create"))
     issue_line = _issue_line(issue_data, str(payload.get("url") or "").strip())
 
     lines = [
@@ -367,7 +369,6 @@ def _build_comment_message(
     if comment_url:
         lines.append(f"*Comment Link:* <{comment_url}|Open in Linear>")
 
-    lines.append(f"*Event:* `{action}` (route: `{_slack_escape(route_reason)}`)")
     return "\n".join(lines)
 
 
@@ -414,6 +415,9 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
     if not isinstance(payload, dict):
         return _response(400, {"ok": False, "error": "invalid_payload"})
 
+    event_type = str(payload.get("type") or "").lower()
+    action = str(payload.get("action") or "").lower()
+
     signature = headers.get("linear-signature", "")
     if not _verify_signature(raw, signature, config["LINEAR_WEBHOOK_SECRET"]):
         LOGGER.warning("Rejected webhook due to invalid Linear signature.")
@@ -428,30 +432,56 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
         if not isinstance(issue_data, dict):
             issue_data = {}
 
+        issue_id = str(issue_data.get("id") or "").strip()
+        if issue_id and not _extract_assignee_email(issue_data):
+            try:
+                enriched_issue = _fetch_issue_from_linear(config, issue_id)
+                issue_data = _merge_issue_data(issue_data, enriched_issue)
+            except Exception as error:  # noqa: BLE001
+                LOGGER.warning("Failed to enrich assignment issue '%s' from Linear API: %s", issue_id, error)
+
         slack_user_id, route_reason = _resolve_slack_target_from_issue(issue_data, config)
         if not slack_user_id:
+            LOGGER.info(
+                "Issue event not routed: reason=%s type=%s action=%s assigneeId=%s",
+                "no_matching_route",
+                event_type,
+                action,
+                str(issue_data.get("assigneeId") or ""),
+            )
             return _response(200, {"ok": True, "notified": False, "reason": "no_matching_route"})
 
         try:
-            text = _build_assignment_message(payload, slack_user_id, route_reason)
+            text = _build_assignment_message(payload, issue_data, slack_user_id)
             _post_to_slack(config["SLACK_BOT_TOKEN"], config["SLACK_CHANNEL_ID"], text)
         except Exception as error:  # noqa: BLE001
             LOGGER.exception("Failed to send Slack notification: %s", error)
             return _response(500, {"ok": False, "error": "slack_dispatch_failed"})
 
+        LOGGER.info("Issue event dispatched to Slack: route=%s type=%s action=%s", route_reason, event_type, action)
         return _response(200, {"ok": True, "notified": True, "route": route_reason, "kind": "issue_assignment"})
 
     if _is_comment_event(payload):
         issue_data, commenter_id, commenter_display, comment_body, comment_url = _extract_comment_issue(payload, config)
         if not issue_data:
+            LOGGER.info("Comment event skipped: reason=%s type=%s action=%s", "missing_issue_context", event_type, action)
             return _response(200, {"ok": True, "notified": False, "reason": "missing_issue_context"})
 
         assignee_id = _extract_assignee_id(issue_data)
         if assignee_id and commenter_id and assignee_id == commenter_id:
+            LOGGER.info("Comment event skipped: reason=%s type=%s action=%s", "self_comment", event_type, action)
             return _response(200, {"ok": True, "notified": False, "reason": "self_comment"})
 
         slack_user_id, route_reason = _resolve_slack_target_from_issue(issue_data, config)
         if not slack_user_id:
+            LOGGER.info(
+                "Comment event not routed: reason=%s type=%s action=%s assigneeId=%s commenterId=%s",
+                "no_matching_route",
+                event_type,
+                action,
+                assignee_id,
+                commenter_id,
+            )
             return _response(200, {"ok": True, "notified": False, "reason": "no_matching_route"})
 
         try:
@@ -459,7 +489,6 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
                 payload,
                 issue_data,
                 slack_user_id,
-                route_reason,
                 commenter_display,
                 comment_body,
                 comment_url,
@@ -469,6 +498,8 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
             LOGGER.exception("Failed to send Slack notification: %s", error)
             return _response(500, {"ok": False, "error": "slack_dispatch_failed"})
 
+        LOGGER.info("Comment event dispatched to Slack: route=%s type=%s action=%s", route_reason, event_type, action)
         return _response(200, {"ok": True, "notified": True, "route": route_reason, "kind": "issue_comment"})
 
+    LOGGER.info("Webhook event ignored: type=%s action=%s", event_type, action)
     return _response(200, {"ok": True, "notified": False, "reason": "irrelevant_event"})

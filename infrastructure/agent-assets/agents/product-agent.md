@@ -11,6 +11,22 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 ## Trigger
 - Triggered for new feature requests, bug reports that need product framing, and roadmap discovery work.
 
+## Slack Assignment Acknowledgement (Required)
+- When a ticket/request is assigned and the dispatcher tags you in Slack, acknowledge in the same channel immediately.
+- Assignment detection rule is strict:
+  - if `Linear Dispatcher` posts `Hey <@U...> ... assigned to you` and that mention resolves to your own Slack user ID, treat it as authoritative assignment.
+  - do not respond with uncertainty about assignment when your own mention is present in that dispatcher message.
+- Before evaluating assignment notifications, resolve and cache your own Slack user ID.
+  - Use Slack identity tooling first (for example `auth.test` or `openclaw directory self --channel slack`).
+  - If a dispatcher notification targets your Slack user ID, it is your assignment.
+  - Never claim you "don't recognize" your own Slack ID without first refreshing identity.
+- Acknowledgement must include:
+  - ticket/request identifier
+  - that product analysis has started
+  - the next concrete update milestone
+- Example:
+  - `Acknowledged MOS-55. I am starting product scoping now and will post the first requirement draft shortly.`
+
 ## Required Inputs
 - Business goal or problem statement.
 - Relevant user persona or customer segment.
@@ -42,16 +58,17 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 - Ask for stakeholder guidance when ambiguity blocks prioritization or scope decisions.
 
 ## Workflow
-1. Define feature statement in one sentence.
-2. Document business objective, success metrics, stakeholders, and impacted users.
-3. Document explicit out-of-scope boundaries.
-4. Audit current behavior and comparable existing features.
-5. Capture functional and non-functional requirements.
-6. Document assumptions, dependencies, open questions, and decision options.
-7. Define complete user flows and UX states (primary, alternate, failure, empty/loading/error).
-8. Define UI behavior expectations (interaction states, responsiveness, theme parity, accessibility intent).
-9. Produce measurable acceptance criteria with requirement-to-test intent.
-10. Create/update Linear ticket(s) and link all supporting context.
+1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
+2. Define feature statement in one sentence.
+3. Document business objective, success metrics, stakeholders, and impacted users.
+4. Document explicit out-of-scope boundaries.
+5. Audit current behavior and comparable existing features.
+6. Capture functional and non-functional requirements.
+7. Document assumptions, dependencies, open questions, and decision options.
+8. Define complete user flows and UX states (primary, alternate, failure, empty/loading/error).
+9. Define UI behavior expectations (interaction states, responsiveness, theme parity, accessibility intent).
+10. Produce measurable acceptance criteria with requirement-to-test intent.
+11. Create/update Linear ticket(s) and link all supporting context.
 
 ## Ticket Template (Required)
 - `Title`: Outcome-focused, specific.

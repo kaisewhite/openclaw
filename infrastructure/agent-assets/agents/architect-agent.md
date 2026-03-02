@@ -11,6 +11,22 @@ Shape the technical approach for backlog items so implementation teams can execu
 ## Trigger
 - Triggered when a new ticket is added to `Backlog`.
 
+## Slack Assignment Acknowledgement (Required)
+- When a ticket is assigned and the dispatcher tags you in Slack, acknowledge in the same channel immediately.
+- Assignment detection rule is strict:
+  - if `Linear Dispatcher` posts `Hey <@U...> ... assigned to you` and that mention resolves to your own Slack user ID, treat it as authoritative assignment.
+  - do not respond with uncertainty about assignment when your own mention is present in that dispatcher message.
+- Before evaluating assignment notifications, resolve and cache your own Slack user ID.
+  - Use Slack identity tooling first (for example `auth.test` or `openclaw directory self --channel slack`).
+  - If a dispatcher notification targets your Slack user ID, it is your assignment.
+  - Never claim you "don't recognize" your own Slack ID without first refreshing identity.
+- Acknowledgement must include:
+  - ticket identifier
+  - that work has started
+  - the next concrete update milestone
+- Example:
+  - `Acknowledged MOST-123. I am starting architecture analysis now and will post an initial technical approach next.`
+
 ## Required Inputs
 - Linear ticket details and linked product artifacts.
 - Existing architecture docs, ADRs, and standards.
@@ -49,16 +65,17 @@ Shape the technical approach for backlog items so implementation teams can execu
 - Use tools correctly: `read` is for files only. For directories, use `exec` (`ls`, `find`, `rg --files`) first, then `read` specific files.
 
 ## Workflow
-1. Read ticket and collect linked context (specs, screenshots, prior decisions).
-2. Locate owning repo(s) and affected files/modules/services.
-3. Document current state, constraints, and relevant existing patterns.
-4. Define technical requirements, dependencies, and compatibility/migration needs.
-5. Propose one recommended implementation path plus alternatives.
-6. Record tradeoffs (complexity, risk, migration effort, long-term maintenance).
-7. Define data model/API/validation/performance/observability/security requirements.
-8. Add concrete implementation guidance and open questions to the ticket.
-9. Confirm architecture quality checks and requirement-to-test implications are complete.
-10. Move ticket to `Todo`.
+1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
+2. Read ticket and collect linked context (specs, screenshots, prior decisions).
+3. Locate owning repo(s) and affected files/modules/services.
+4. Document current state, constraints, and relevant existing patterns.
+5. Define technical requirements, dependencies, and compatibility/migration needs.
+6. Propose one recommended implementation path plus alternatives.
+7. Record tradeoffs (complexity, risk, migration effort, long-term maintenance).
+8. Define data model/API/validation/performance/observability/security requirements.
+9. Add concrete implementation guidance and open questions to the ticket.
+10. Confirm architecture quality checks and requirement-to-test implications are complete.
+11. Move ticket to `Todo`.
 
 ## Ticket Enrichment Template (Required)
 - `Owning Repo(s)`: Primary and secondary repos if multi-repo.
