@@ -94,6 +94,26 @@ const defaultOpenclawOverrides = {
   ...defaultPluginsOverrides,
 } as const;
 
+const architectSubagentOverrides = {
+  ...defaultOpenclawOverrides,
+  subagents: {
+    allowAgents: ["architect-agent"],  // spawn sub-agents under own identity
+    maxConcurrent: 3,
+    runTimeoutSeconds: 900,
+    archiveAfterMinutes: 60,
+  },
+} as const;
+
+const fullstackSubagentOverrides = {
+  ...defaultOpenclawOverrides,
+  subagents: {
+    allowAgents: ["fullstack-agent"],  // spawn sub-agents under own identity
+    maxConcurrent: 3,
+    runTimeoutSeconds: 900,
+    archiveAfterMinutes: 60,
+  },
+} as const;
+
 export const project: Project = {
   name: "openclaw",
   envs: ["mgmt"],
@@ -107,8 +127,8 @@ export const project: Project = {
       displayName: "Architect Agent",
       description: "Architecture and technical design review agent",
       runtime: {
-        cpu: 2048,
-        memoryLimitMiB: 4096,
+        cpu: 8192,
+        memoryLimitMiB: 16384,
         desiredCount: 1,
       },
       model: {
@@ -118,8 +138,8 @@ export const project: Project = {
       openclaw: {
         soulPromptPath: "agent-assets/agents/architect-agent.md",
         allowTools: ["*"],
-        denyTools: ["agentToAgent"],
-        configOverrides: defaultOpenclawOverrides,
+        denyTools: [],
+        configOverrides: architectSubagentOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
@@ -131,8 +151,8 @@ export const project: Project = {
       displayName: "Fullstack Agent",
       description: "Implementation and delivery agent",
       runtime: {
-        cpu: 4096,
-        memoryLimitMiB: 8192,
+        cpu: 8192,
+        memoryLimitMiB: 16384,
         desiredCount: 1,
       },
       model: {
@@ -142,8 +162,8 @@ export const project: Project = {
       openclaw: {
         soulPromptPath: "agent-assets/agents/senior-fullstack-agent.md",
         allowTools: ["*"],
-        denyTools: ["agentToAgent"],
-        configOverrides: defaultOpenclawOverrides,
+        denyTools: [],
+        configOverrides: fullstackSubagentOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
