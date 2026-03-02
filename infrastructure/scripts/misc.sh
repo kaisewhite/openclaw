@@ -15,10 +15,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Get stack names from `cdk list`, filter for platform
-stack_names=$(cdk list --profile $AWS_PROFILE --output "$CDK_OUTPUT_DIR" | grep open | awk -F ' ' '{print $1}')
+# Get child stack artifacts only (skip root wrapper stack to avoid duplicate deploys)
+stack_names=$(cdk list --profile $AWS_PROFILE --output "$CDK_OUTPUT_DIR" | awk -F ' ' '{print $1}' | grep '^OpenclawStack/')
 
-# Loop through the stack names
+# Loop through stack names
 for stack_name in $stack_names; do
   echo "Running commands for stack: $stack_name"
 

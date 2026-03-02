@@ -9,6 +9,6 @@ const mgmt = { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK
 const app = new cdk.App();
 new OpenclawStack(app, "OpenclawStack", {
   env: mgmt,
-  stackName: "openclaw-cdk",
-  description: "CDK stack for OpenClaw project",
+  stackName: "openclaw-root-cdk",
+  description: "CDK root stack for OpenClaw project",
 });

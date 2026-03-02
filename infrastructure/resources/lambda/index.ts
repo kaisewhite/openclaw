@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -49,6 +50,12 @@ export class LinearSlackDispatcherLambda extends Construct {
 
     this.functionUrl = this.handler.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
+    });
+
+    // Required for anonymous Function URL invocation in this account/CDK combo.
+    this.handler.addPermission(`${props.project}-linear-dispatcher-public-invoke`, {
+      action: "lambda:InvokeFunction",
+      principal: new iam.AnyPrincipal(),
     });
 
     addStandardTags(this.handler, {
