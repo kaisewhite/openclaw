@@ -181,6 +181,42 @@ const writeTextFile = async (filePath, value) => {
   await fs.writeFile(filePath, value, "utf8");
 };
 
+const pruneLegacyInvalidConfigKeys = (config) => {
+  if (!isObjectRecord(config)) {
+    return [];
+  }
+
+  const removed = [];
+  const agents = normalizeObjectRecord(config.agents);
+  const defaults = normalizeObjectRecord(agents.defaults);
+  const subagents = normalizeObjectRecord(defaults.subagents);
+
+  if ("allowAgents" in subagents) {
+    delete subagents.allowAgents;
+    removed.push("agents.defaults.subagents.allowAgents");
+  }
+
+  if (Object.keys(subagents).length > 0) {
+    defaults.subagents = subagents;
+  } else if ("subagents" in defaults) {
+    delete defaults.subagents;
+  }
+
+  if (Object.keys(defaults).length > 0) {
+    agents.defaults = defaults;
+  } else if ("defaults" in agents) {
+    delete agents.defaults;
+  }
+
+  if (Object.keys(agents).length > 0) {
+    config.agents = agents;
+  } else if ("agents" in config) {
+    delete config.agents;
+  }
+
+  return removed;
+};
+
 const bootstrap = async () => {
   const payload = parseJsonEnv("OPENCLAW_JSON", {});
   const payloadOverrides =
@@ -255,12 +291,16 @@ const bootstrap = async () => {
     deepMerge(deepMerge(existingConfig, payloadFragment), payloadOverrides),
     desiredConfig,
   );
+  const removedKeys = pruneLegacyInvalidConfigKeys(mergedConfig);
 
   await fs.mkdir(WORKSPACE_DIR, { recursive: true });
   await fs.mkdir(AGENT_DIR, { recursive: true });
   await fs.mkdir(SESSIONS_DIR, { recursive: true });
 
   await writeJsonFile(CONFIG_PATH, mergedConfig);
+  if (removedKeys.length > 0) {
+    console.log(`[bootstrap] Removed stale config keys: ${removedKeys.join(", ")}`);
+  }
 
   const soul = process.env.OPENCLAW_SOUL_MD;
   if (typeof soul === "string" && soul.trim() !== "") {

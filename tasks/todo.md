@@ -187,3 +187,20 @@
   - Kept valid defaults (`maxConcurrent`, `runTimeoutSeconds`, `archiveAfterMinutes`).
 - Verification:
   - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.
+
+## Plan: Auto-Prune Stale Invalid Subagent Default Keys
+
+- [x] Inspect bootstrap merge behavior for persisted EFS config carry-over.
+- [x] Add startup-time prune for stale invalid key `agents.defaults.subagents.allowAgents`.
+- [x] Validate bootstrap script syntax and key references.
+- [x] Document required redeploy path to apply bootstrap fix.
+
+## Review: Auto-Prune Stale Invalid Subagent Default Keys
+
+- Root cause persisted after config fix because `openclaw-bootstrap.mjs` deep-merges existing EFS `openclaw.json` and does not delete removed keys.
+- Added `pruneLegacyInvalidConfigKeys()` in `infrastructure/docker/openclaw-bootstrap.mjs` to remove:
+  - `agents.defaults.subagents.allowAgents`
+- Bootstrap now logs when stale keys are removed:
+  - `[bootstrap] Removed stale config keys: agents.defaults.subagents.allowAgents`
+- Validation:
+  - `node --check infrastructure/docker/openclaw-bootstrap.mjs` passes.
