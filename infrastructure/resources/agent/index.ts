@@ -85,14 +85,27 @@ export class AgentFargateStack extends cdk.Stack {
     executionRole.addToPolicy(efsPolicy);
     taskRole.addToPolicy(efsPolicy);
 
-    const secretReadPolicy = new iam.PolicyStatement({
+    const scopedSecretReadPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
       resources: [secret.secretArn],
     });
 
-    executionRole.addToPolicy(secretReadPolicy);
-    taskRole.addToPolicy(secretReadPolicy);
+    executionRole.addToPolicy(scopedSecretReadPolicy);
+
+    const allSecretsReadOnlyPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds",
+        "secretsmanager:ListSecrets",
+        "secretsmanager:BatchGetSecretValue",
+      ],
+      resources: ["*"],
+    });
+
+    taskRole.addToPolicy(allSecretsReadOnlyPolicy);
 
     const route53DomainAvailabilityPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,

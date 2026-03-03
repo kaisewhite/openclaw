@@ -318,6 +318,31 @@
 
 ## Plan: Enforce OpenClaw Memory Workflow Across Agents
 
+## Plan: Agent Secrets Manager Read-All (Read-Only)
+
+- [x] Locate IAM policies attached to agent execution/task roles.
+- [x] Keep execution role secret access scoped for ECS injection.
+- [x] Grant task role read-only access to all Secrets Manager secrets.
+- [x] Verify no Secrets Manager write actions are granted.
+- [x] Run `cdk synth` and inspect generated IAM statements.
+
+## Review: Agent Secrets Manager Read-All (Read-Only)
+
+- Updated `infrastructure/resources/agent/index.ts`:
+  - renamed scoped policy to `scopedSecretReadPolicy` for execution role secret injection.
+  - added `allSecretsReadOnlyPolicy` on agent task role with:
+    - `secretsmanager:GetSecretValue`
+    - `secretsmanager:DescribeSecret`
+    - `secretsmanager:ListSecretVersionIds`
+    - `secretsmanager:ListSecrets`
+    - `secretsmanager:BatchGetSecretValue`
+  - resource scope is `*` to include cross-account secret ARNs (including development account).
+- Validation:
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling`
+  - `rg -n "secretsmanager:(PutSecretValue|UpdateSecret|CreateSecret|DeleteSecret|TagResource|UntagResource|RotateSecret|ReplicateSecretToRegions)" cdk.out/*.template.json -S` returns no matches.
+  - synthesized fullstack task role policy includes read-only secrets actions with `Resource: "*"` in:
+    - `cdk.out/OpenclawStackopenclawcdkopenclawfullstackagentcdk08B7B2FF.template.json`
+
 - [x] Add default OpenClaw config overrides for pre-compaction memory flush.
 - [x] Add default OpenClaw config overrides for memory search provider/model.
 - [x] Ensure architect/fullstack subagent overrides retain memory settings after merge.
