@@ -204,3 +204,145 @@
   - `[bootstrap] Removed stale config keys: agents.defaults.subagents.allowAgents`
 - Validation:
   - `node --check infrastructure/docker/openclaw-bootstrap.mjs` passes.
+
+## Plan: Fix Slack Assignment Trigger From Dispatcher Bot Messages
+
+- [x] Inspect architect agent runtime/event handling path for dispatcher assignment messages.
+- [x] Confirm whether Slack bot-authored messages are filtered by default.
+- [x] Update agent Slack channel config overrides to allow bot-authored messages.
+- [x] Validate stack synthesis after config change.
+
+## Review: Fix Slack Assignment Trigger From Dispatcher Bot Messages
+
+- Root cause:
+  - OpenClaw Slack handler drops bot-authored messages unless `channels.slack.allowBots=true`.
+  - Dispatcher posts are bot-authored (`Linear Dispatcher`), so assignments never reached agent runtime for acknowledgment logic.
+- Evidence:
+  - `openclaw/src/slack/monitor/message-handler/prepare.ts` drops bot messages when `allowBots=false`.
+  - `openclaw/docs/gateway/configuration-reference.md` states default `allowBots: false`.
+- Fix:
+  - Set `allowBots: true` in `defaultSlackOverrides` (`infrastructure/properties/index.ts`).
+- Validation:
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.
+
+## Plan: Enforce Concise Slack Responses With Full Detail In Linear
+
+- [x] Update all agent soul prompts with explicit Slack-vs-Linear output policy.
+- [x] Require concise Slack summaries and prohibit long analysis dumps in channel.
+- [x] Add workflow steps that publish full analysis in Linear, then short Slack pointer.
+- [x] Verify prompt updates exist across architect/fullstack/qa/product agents.
+
+## Review: Enforce Concise Slack Responses With Full Detail In Linear
+
+- Updated:
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+- Added `Slack vs Linear Output Policy (Required)` to each agent:
+  - Slack must stay concise (short status + key bullets + pointer).
+  - Full analysis/spec/report content must go to Linear issue comments.
+- Updated workflows so each agent posts detailed output to Linear first, then concise Slack update.
+
+## Plan: Fullstack Periodic Progress Updates In Slack + Linear
+
+- [x] Add explicit progress cadence requirements to the fullstack soul prompt.
+- [x] Require each cadence update in both Slack (concise) and Linear comments (detailed).
+- [x] Integrate cadence checkpoints into the workflow steps.
+- [x] Verify prompt text includes the new cadence and posting rules.
+
+## Review: Fullstack Periodic Progress Updates In Slack + Linear
+
+- Updated `infrastructure/agent-assets/agents/senior-fullstack-agent.md` with a new required section:
+  - `Progress Update Cadence (Required)`
+  - progress updates required every 20 minutes (or milestone/blocker), in both Slack and Linear comments.
+- Added required payload for each update:
+  - phase delta, blocker status, next action, next update ETA.
+- Workflow now includes:
+  - kickoff update to Slack + Linear at start.
+  - recurring cadence updates during implementation.
+  - concise completion update in Slack with full details in Linear/PR.
+- Verification:
+  - `rg -n "Progress Update Cadence|every 20 minutes|kickoff progress update|cadence updates" infrastructure/agent-assets/agents/senior-fullstack-agent.md` confirms the new policy and workflow steps are present.
+
+## Plan: Apply Periodic Progress Updates To All Agents
+
+- [x] Add progress cadence policy to architect agent soul.
+- [x] Add progress cadence policy to product agent soul.
+- [x] Add progress cadence policy to QA agent soul.
+- [x] Integrate cadence checkpoints into each agent workflow.
+- [x] Verify all four active agents now include cadence policy text.
+
+## Review: Apply Periodic Progress Updates To All Agents
+
+- Updated:
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+- Added `Progress Update Cadence (Required)` to each:
+  - updates every 20 minutes (or milestone/blocker)
+  - mirrored updates to Slack (concise) + Linear comments (detailed)
+  - required content: phase delta, blocker status, next action, next update ETA
+  - required pause notice before silence
+- Workflow changes:
+  - each agent now posts kickoff update to Slack + Linear
+  - each agent now posts recurring cadence updates during execution
+- Verification:
+  - `rg -n "^## Progress Update Cadence|every 20 minutes" infrastructure/agent-assets/agents/*.md`
+
+## Plan: Prevent Lost-Context "No Record" Responses
+
+- [x] Add assignment continuity and recovery rules to fullstack agent soul.
+- [x] Add assignment continuity and recovery rules to architect, product, and QA souls.
+- [x] Require durable local journal writes per ticket and recovery checks before context-loss claims.
+- [x] Update workflow steps to create/update journals and append during cadence updates.
+- [x] Verify continuity sections and workflow hooks exist across all active agent souls.
+
+## Review: Prevent Lost-Context "No Record" Responses
+
+- Updated:
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+- Added `Assignment Continuity & Recovery (Required)` to each soul:
+  - never claim "no record/not assigned" before recovery checks
+  - durable journal per ticket at `tasks/agent-journal/<TICKET-ID>.md`
+  - recovery sequence: local journal -> Linear issue -> Slack history
+  - if still incomplete, post explicit context-recovery update and proceed from Linear source of truth
+- Workflow now requires:
+  - journal creation/update immediately after assignment acknowledgement
+  - journal append during recurring cadence updates
+- Verification:
+  - `rg -n "^## Assignment Continuity & Recovery|tasks/agent-journal/<TICKET-ID>.md|context-recovery" infrastructure/agent-assets/agents/*.md`
+
+## Plan: Enforce OpenClaw Memory Workflow Across Agents
+
+- [x] Add default OpenClaw config overrides for pre-compaction memory flush.
+- [x] Add default OpenClaw config overrides for memory search provider/model.
+- [x] Ensure architect/fullstack subagent overrides retain memory settings after merge.
+- [x] Add required durable memory read/write workflow to all active agent souls.
+- [x] Verify prompt/config changes and run CDK synth.
+
+## Review: Enforce OpenClaw Memory Workflow Across Agents
+
+- Updated `infrastructure/properties/index.ts`:
+  - Added shared `defaultAgentDefaults` under `agents.defaults` with:
+    - `compaction.memoryFlush` enabled and durable-memory prompts.
+    - `memorySearch` enabled with `provider: gemini` and `model: gemini-embedding-001`.
+  - Ensured `architectSubagentOverrides` and `fullstackSubagentOverrides` merge:
+    - default memory settings + subagent settings (no overwrite regression).
+- Updated agent souls:
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+- Added `Durable Memory Workflow (Required)` to each soul:
+  - assignment-start memory recovery (`memory_search` + `memory_get`)
+  - write durable memory entries to `memory/YYYY-MM-DD.md`
+  - append memory at milestones/blockers/completion
+  - require memory + continuity recovery before any context-loss claim
+- Validation:
+  - `rg -n "defaultAgentDefaults|memoryFlush|memorySearch|provider: \"gemini\"" infrastructure/properties/index.ts`
+  - `rg -n "^## Durable Memory Workflow|memory_search|memory_get|memory/YYYY-MM-DD.md" infrastructure/agent-assets/agents/*.md`
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling`

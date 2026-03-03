@@ -6,3 +6,9 @@
 - For webhook handlers, log all terminal decision branches (`notified`, `no_matching_route`, `self_comment`, `irrelevant_event`) so START/END-only traces cannot hide routing/config failures.
 - For Slack assignment routing, never rely on display names/aliases in prompts; use canonical `<@U...>` mention-to-self semantics and require identity refresh (`auth.test` or equivalent) before claiming assignment ambiguity.
 - For OpenClaw `configOverrides`, only set keys valid at the target schema level; nest feature config under the correct object path (e.g. `agents.defaults.subagents`), never as ad-hoc root keys.
+- For Slack-triggered automations, remember dispatcher/webhook posts are usually bot-authored; if agents must react to those messages, explicitly enable `channels.slack.allowBots=true` (with mention gating to avoid noise/loops).
+- For multi-agent channel hygiene, enforce a strict split: concise Slack execution updates only, full technical analysis/spec/report content in Linear comments.
+- If assignment visibility is critical, encode explicit progress cadence in the agent soul (time-based + milestone-based) and require mirrored Slack + ticket comment updates to eliminate silent execution windows.
+- When a behavior rule is intended platform-wide, apply it to all active agent souls in the same change to prevent role drift and inconsistent runtime behavior.
+- For multi-session agents, require a durable per-ticket journal + explicit recovery checks (journal, Linear, Slack) before any "no record" response to avoid false context loss claims.
+- For durable recall, pair prompt-level memory discipline (read/write `memory/YYYY-MM-DD.md` + memory tools) with config-level safeguards (`agents.defaults.compaction.memoryFlush` and `agents.defaults.memorySearch`) so behavior survives compaction and restarts.

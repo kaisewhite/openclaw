@@ -64,6 +64,7 @@ const defaultSlackOverrides = {
   channels: {
     slack: {
       enabled: true,
+      allowBots: true,
       dmPolicy: "open",
       allowFrom: ["*"],
       groupPolicy: "open",
@@ -89,16 +90,39 @@ const defaultPluginsOverrides = {
   },
 } as const;
 
+const defaultAgentDefaults = {
+  compaction: {
+    mode: "safeguard",
+    reserveTokensFloor: 24000,
+    memoryFlush: {
+      enabled: true,
+      softThresholdTokens: 6000,
+      systemPrompt: "Session nearing compaction. Store durable memories now.",
+      prompt:
+        "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
+    },
+  },
+  memorySearch: {
+    enabled: true,
+    provider: "gemini",
+    model: "gemini-embedding-001",
+  },
+} as const;
+
 const defaultOpenclawOverrides = {
   ...defaultSlackOverrides,
   ...defaultSkillsOverrides,
   ...defaultPluginsOverrides,
+  agents: {
+    defaults: defaultAgentDefaults,
+  },
 } as const;
 
 const architectSubagentOverrides = {
   ...defaultOpenclawOverrides,
   agents: {
     defaults: {
+      ...defaultAgentDefaults,
       subagents: {
         maxConcurrent: 3,
         runTimeoutSeconds: 900,
@@ -112,6 +136,7 @@ const fullstackSubagentOverrides = {
   ...defaultOpenclawOverrides,
   agents: {
     defaults: {
+      ...defaultAgentDefaults,
       subagents: {
         maxConcurrent: 3,
         runTimeoutSeconds: 900,

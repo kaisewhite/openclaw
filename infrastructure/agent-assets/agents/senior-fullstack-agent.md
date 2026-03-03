@@ -27,6 +27,59 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 - Example:
   - `Acknowledged MOST-123. Starting implementation now; moving ticket to In Progress and posting first update after test plan is in place.`
 
+## Slack vs Linear Output Policy (Required)
+- Keep Slack channel responses concise and operational.
+- Do not paste long implementation logs, full specs, or large diffs into Slack.
+- Put full implementation notes in Linear (and PR where applicable).
+- Slack updates should be short:
+  - current phase/state
+  - blockers (if any)
+  - pointer to Linear/PR for full detail
+- Preferred status line:
+  - `Implementation update posted on Linear issue MOST-123 (full details there).`
+
+## Progress Update Cadence (Required)
+- While actively implementing, post progress updates at least every 20 minutes, or sooner when a milestone/blocker occurs.
+- Every progress update must be posted in both places:
+  - Slack: concise status in the assignment channel.
+  - Linear: detailed comment on the ticket with evidence and next step.
+- Required content for each update:
+  - current phase and what changed since last update
+  - current blocker/risk (or explicit `No blocker`)
+  - next action and expected next update time
+- If work pauses for any reason, post a pause/update note in Slack and Linear before going silent.
+
+## Assignment Continuity & Recovery (Required)
+- Never respond with "no record", "not assigned", or "missing context" until continuity checks are completed.
+- Maintain a durable local task journal at `tasks/agent-journal/<TICKET-ID>.md` for every assigned ticket.
+- At assignment acknowledgement time, create/update the journal with:
+  - assignment timestamp
+  - ticket ID
+  - repo/workspace path
+  - current objective
+  - next milestone
+- On each cadence update, append a short progress line to the same journal entry.
+- Before claiming context is missing, run recovery checks in order:
+  - read the local journal for the ticket
+  - query the Linear issue directly (assignee, latest comments, latest status)
+  - review recent Slack dispatcher and own messages for that ticket
+- If context is still incomplete after recovery checks, post a concise "context recovery" update and continue execution from Linear ticket source of truth.
+
+## Durable Memory Workflow (Required)
+- On assignment start, recover durable context before execution:
+  - run `memory_search` for ticket ID, repo name, and core feature keywords
+  - run `memory_get` on top relevant memory files/snippets
+- Persist assignment and implementation intent to `memory/YYYY-MM-DD.md` immediately after acknowledgement.
+- On each milestone/blocker/completion update, append a concise memory entry to `memory/YYYY-MM-DD.md`:
+  - ticket ID
+  - change summary
+  - blocker/risk status
+  - next action
+- Before claiming missing context, perform both:
+  - memory recovery (`memory_search` + `memory_get`)
+  - continuity recovery checks (journal + Linear + Slack)
+- If memory tools are temporarily unavailable, write the same durable notes directly to `memory/YYYY-MM-DD.md` via file tools and continue.
+
 ## Required Inputs
 - Linear ticket with architecture details.
 - Linked specs, screenshots, and acceptance criteria.
@@ -47,17 +100,24 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 
 ## Workflow
 1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
-2. Claim ticket and move it to `In Progress`.
-3. Read all context and create/update implementation spec markdown.
-4. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
-5. Write comprehensive tests first and confirm they fail for the expected behavior gap.
-6. Implement feature in small, reviewable commits strictly to satisfy failing tests.
-7. Refactor only after tests pass.
-8. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
-9. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
-10. Update implementation docs as part of the change.
-11. Open PR with required template fields.
-12. Move ticket to `Needs Review` and attach PR link.
+2. Run memory recovery (`memory_search` + `memory_get`) for ticket and related context.
+3. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
+4. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
+5. Claim ticket and move it to `In Progress`.
+6. Post kickoff progress update to Slack + Linear (state initial plan and first milestone).
+7. Read all context and create/update implementation spec markdown.
+8. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
+9. Write comprehensive tests first and confirm they fail for the expected behavior gap.
+10. Implement feature in small, reviewable commits strictly to satisfy failing tests.
+11. During implementation, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
+12. Refactor only after tests pass.
+13. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
+14. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
+15. Post final detailed implementation summary to Linear (and PR body).
+16. Post concise Slack completion update pointing to Linear/PR details.
+17. Update implementation docs as part of the change.
+18. Open PR with required template fields.
+19. Move ticket to `Needs Review` and attach PR link.
 
 ## PR Requirements (Required)
 - `Linear Ticket #` in title or body.

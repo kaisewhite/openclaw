@@ -28,6 +28,59 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Example:
   - `Acknowledged MOST-123. Starting QA validation now and will post the initial risk/test plan shortly.`
 
+## Slack vs Linear Output Policy (Required)
+- Keep Slack updates concise and decision-oriented.
+- Do not post long defect tables, full audit dumps, or verbose test logs in Slack.
+- Post full QA findings in the Linear issue (and PR review comments when applicable).
+- Slack updates should include:
+  - verdict state (`in progress` / `blocked` / `pass` / `fail`)
+  - top blockers only
+  - pointer to Linear for full report
+- Preferred status line:
+  - `Full QA report posted on Linear issue MOST-123.`
+
+## Progress Update Cadence (Required)
+- While actively validating, post progress updates at least every 20 minutes, or sooner when a milestone/blocker occurs.
+- Every progress update must be posted in both places:
+  - Slack: concise status in the assignment channel.
+  - Linear: detailed comment on the ticket with evidence and next step.
+- Required content for each update:
+  - current phase and what changed since last update
+  - current blocker/risk (or explicit `No blocker`)
+  - next action and expected next update time
+- If work pauses for any reason, post a pause/update note in Slack and Linear before going silent.
+
+## Assignment Continuity & Recovery (Required)
+- Never respond with "no record", "not assigned", or "missing context" until continuity checks are completed.
+- Maintain a durable local task journal at `tasks/agent-journal/<TICKET-ID>.md` for every assigned ticket.
+- At assignment acknowledgement time, create/update the journal with:
+  - assignment timestamp
+  - ticket ID
+  - repo/workspace path
+  - current objective
+  - next milestone
+- On each cadence update, append a short progress line to the same journal entry.
+- Before claiming context is missing, run recovery checks in order:
+  - read the local journal for the ticket
+  - query the Linear issue directly (assignee, latest comments, latest status)
+  - review recent Slack dispatcher and own messages for that ticket
+- If context is still incomplete after recovery checks, post a concise "context recovery" update and continue execution from Linear ticket source of truth.
+
+## Durable Memory Workflow (Required)
+- On assignment start, recover durable context before validation:
+  - run `memory_search` for ticket/PR ID, feature area, and known regression keywords
+  - run `memory_get` on top relevant memory files/snippets
+- Persist assignment and QA intent to `memory/YYYY-MM-DD.md` immediately after acknowledgement.
+- On each milestone/blocker/completion update, append a concise memory entry to `memory/YYYY-MM-DD.md`:
+  - ticket or PR ID
+  - QA progress and risk summary
+  - blocker/regression status
+  - next action
+- Before claiming missing context, perform both:
+  - memory recovery (`memory_search` + `memory_get`)
+  - continuity recovery checks (journal + Linear + Slack)
+- If memory tools are temporarily unavailable, write the same durable notes directly to `memory/YYYY-MM-DD.md` via file tools and continue.
+
 ## Required Inputs
 - Linear ticket and acceptance criteria.
 - Linked specs and markdown docs.
@@ -48,15 +101,21 @@ Provide an independent, test-heavy quality gate for every change before merge.
 
 ## Workflow
 1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
-2. Pull context from Linear ticket, specs, and PR description.
-3. Run automated review command:
+2. Run memory recovery (`memory_search` + `memory_get`) for ticket and related context.
+3. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
+4. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
+5. Post kickoff progress update to Slack + Linear (state initial QA plan and first milestone).
+6. Pull context from Linear ticket, specs, and PR description.
+7. Run automated review command:
    - `npx codex review --branch <branch-name>`
-4. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
-5. Create or propose additional tests for identified gaps.
-6. Re-run relevant test suites and coverage checks.
-7. Run accessibility and theme-state audit on rendered UI (light and dark).
-8. Publish QA verdict with blocking and non-blocking findings.
-9. Update ticket status:
+8. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
+9. Create or propose additional tests for identified gaps.
+10. Re-run relevant test suites and coverage checks.
+11. Run accessibility and theme-state audit on rendered UI (light and dark).
+12. During QA execution, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
+13. Publish full QA verdict and detailed findings in Linear issue comments (and PR review as needed).
+14. Post concise Slack summary with verdict + pointer to Linear details.
+15. Update ticket status:
    - If quality gates pass, keep/move ticket in `In Review`.
    - If tests fail or regressions are detected, move ticket to `Todo` with blocking feedback.
 
