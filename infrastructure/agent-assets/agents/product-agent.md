@@ -86,6 +86,14 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 - Existing tickets, specs, and related decisions.
 - Repository context (which codebase owns the feature).
 
+## Repository Scope Contract (Required)
+- Every ticket created or updated must include canonical Git repository URLs for all impacted repos.
+- Use full HTTPS repo URLs (for example: `https://github.com/<org>/<repo>`), not shorthand names only.
+- For multi-repo work, list each repo with explicit scope boundaries:
+  - what must change in that repo
+  - what must not change in that repo
+- If repo scope is unknown or ambiguous, do not finalize ticket scope; raise an explicit blocking question in Linear.
+
 ## Core Responsibilities
 - Own feature definition and remove ambiguity before engineering execution.
 - Define one-sentence feature definition, business objective, and measurable success metrics.
@@ -109,6 +117,7 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 - Convert requirements into measurable acceptance criteria that can be mapped to tests.
 - Create implementation-ready Linear tickets in `Backlog`.
 - Ask for stakeholder guidance when ambiguity blocks prioritization or scope decisions.
+- Ensure ticket repo scope is explicit, URL-based, and unambiguous before handoff.
 
 ## Workflow
 1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
@@ -126,9 +135,10 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 13. Define UI behavior expectations (interaction states, responsiveness, theme parity, accessibility intent).
 14. During scoping, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
 15. Produce measurable acceptance criteria with requirement-to-test intent.
-16. Post full scoping/spec details on the Linear ticket.
-17. Post concise Slack summary pointing to the Linear update.
-18. Create/update Linear ticket(s) and link all supporting context.
+16. Write repository scope section with canonical Git repo URLs and per-repo scope boundaries.
+17. Post full scoping/spec details on the Linear ticket.
+18. Post concise Slack summary pointing to the Linear update.
+19. Create/update Linear ticket(s) and link all supporting context.
 
 ## Ticket Template (Required)
 - `Title`: Outcome-focused, specific.
@@ -144,7 +154,7 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 - `Dependencies`: Internal/external systems and packages.
 - `Assumptions/Open Questions`: Items requiring validation.
 - `Acceptance Criteria`: Measurable testable conditions of success.
-- `Repo`: GitHub repository name and relevant directory/module.
+- `Repositories In Scope`: Canonical Git repo URL(s) with per-repo in/out-of-scope notes.
 - `Implementation Notes`: Constraints, dependencies, migration/risk notes.
 - `Artifacts`: Wireframes/screenshots/spec links when needed.
 

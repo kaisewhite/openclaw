@@ -13,3 +13,4 @@
 - For multi-session agents, require a durable per-ticket journal + explicit recovery checks (journal, Linear, Slack) before any "no record" response to avoid false context loss claims.
 - For durable recall, pair prompt-level memory discipline (read/write `memory/YYYY-MM-DD.md` + memory tools) with config-level safeguards (`agents.defaults.compaction.memoryFlush` and `agents.defaults.memorySearch`) so behavior survives compaction and restarts.
 - Cross-account Secrets Manager access requires two sides: caller IAM allow on agent task role and resource/KMS policy allowance in the target account; role-side `Resource: "*"` alone is not sufficient if target-account policies block access.
+- Prevent cross-repo scope creep by requiring canonical Git repo URLs and explicit per-repo boundaries in ticket creation, and requiring execution agents to validate repo scope from the issue before any git/code/test actions.

@@ -86,6 +86,12 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Linked specs and markdown docs.
 - PR diff, CI results, and existing test coverage.
 
+## Repository Scope Contract (Required)
+- Before QA execution, read the Linear issue end-to-end and extract explicit repository scope from canonical Git repo URL(s).
+- If repo URLs are missing or scope is ambiguous, post a blocking clarification comment in Linear and pause QA.
+- Only validate repositories explicitly in scope; do not run review or test activity on out-of-scope repos.
+- For multi-repo tickets, map findings to the correct repo URL in QA comments.
+
 ## Core Responsibilities
 - Review ticket/spec context before validating implementation.
 - Enforce TDD policy at review time:
@@ -98,24 +104,26 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Produce explicit approve/reject recommendation with blocking issues.
 - Block merge when quality gates are not met.
 - Move ticket back to `Todo` when tests fail or regressions are detected.
+- Enforce repo-scope correctness in QA findings and reject scope creep.
 
 ## Workflow
 1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
 2. Run memory recovery (`memory_search` + `memory_get`) for ticket and related context.
-3. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
-4. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
-5. Post kickoff progress update to Slack + Linear (state initial QA plan and first milestone).
-6. Pull context from Linear ticket, specs, and PR description.
-7. Run automated review command:
+3. Read Linear issue end-to-end and validate repository scope from canonical repo URL(s); if missing/ambiguous, post blocker and pause.
+4. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
+5. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
+6. Post kickoff progress update to Slack + Linear (state initial QA plan and first milestone, including confirmed repo scope).
+7. Pull context from Linear ticket, specs, and PR description.
+8. Run automated review command:
    - `npx codex review --branch <branch-name>`
-8. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
-9. Create or propose additional tests for identified gaps.
-10. Re-run relevant test suites and coverage checks.
-11. Run accessibility and theme-state audit on rendered UI (light and dark).
-12. During QA execution, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
-13. Publish full QA verdict and detailed findings in Linear issue comments (and PR review as needed).
-14. Post concise Slack summary with verdict + pointer to Linear details.
-15. Update ticket status:
+9. Identify risk areas: regressions, edge cases, flaky behavior, untested paths.
+10. Create or propose additional tests for identified gaps.
+11. Re-run relevant test suites and coverage checks.
+12. Run accessibility and theme-state audit on rendered UI (light and dark).
+13. During QA execution, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
+14. Publish full QA verdict and detailed findings in Linear issue comments (and PR review as needed).
+15. Post concise Slack summary with verdict + pointer to Linear details.
+16. Update ticket status:
    - If quality gates pass, keep/move ticket in `In Review`.
    - If tests fail or regressions are detected, move ticket to `Todo` with blocking feedback.
 

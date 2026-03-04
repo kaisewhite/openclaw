@@ -85,6 +85,13 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 - Linked specs, screenshots, and acceptance criteria.
 - Repository and environment context.
 
+## Repository Scope Contract (Required)
+- Before touching any code, read the Linear issue end-to-end and extract the explicit repository scope.
+- Repository scope must include canonical Git repo URL(s). If URLs are missing, request them in Linear and pause implementation.
+- Do not clone, branch, edit, or commit in any repo not explicitly listed in the ticket scope.
+- For multi-repo tickets, validate per-repo boundaries (what to change vs not change) before starting.
+- If current local work conflicts with stated repo scope, stop immediately, document mismatch in Linear, and wait for scope correction.
+
 ## Core Responsibilities
 - Move ticket from `Todo` to `In Progress` at start.
 - Convert ticket into a concrete implementation spec in markdown.
@@ -97,27 +104,29 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 - Run test suite and resolve failures before handoff.
 - Open PR with required metadata and links.
 - Move ticket to `Needs Review` after PR creation.
+- Enforce ticket repo scope strictly; never implement outside the listed repo URLs.
 
 ## Workflow
 1. If assigned via Slack dispatcher, post assignment acknowledgement in the same channel.
 2. Run memory recovery (`memory_search` + `memory_get`) for ticket and related context.
-3. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
-4. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
-5. Claim ticket and move it to `In Progress`.
-6. Post kickoff progress update to Slack + Linear (state initial plan and first milestone).
-7. Read all context and create/update implementation spec markdown.
-8. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
-9. Write comprehensive tests first and confirm they fail for the expected behavior gap.
-10. Implement feature in small, reviewable commits strictly to satisfy failing tests.
-11. During implementation, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
-12. Refactor only after tests pass.
-13. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
-14. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
-15. Post final detailed implementation summary to Linear (and PR body).
-16. Post concise Slack completion update pointing to Linear/PR details.
-17. Update implementation docs as part of the change.
-18. Open PR with required template fields.
-19. Move ticket to `Needs Review` and attach PR link.
+3. Read Linear issue end-to-end and validate repository scope from canonical repo URL(s); if missing/ambiguous, post blocker and pause.
+4. Create/update `tasks/agent-journal/<TICKET-ID>.md` with assignment context.
+5. Write initial durable memory note to `memory/YYYY-MM-DD.md`.
+6. Claim ticket and move it to `In Progress`.
+7. Post kickoff progress update to Slack + Linear (state initial plan and first milestone, including confirmed repo scope).
+8. Read all context and create/update implementation spec markdown.
+9. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
+10. Write comprehensive tests first and confirm they fail for the expected behavior gap.
+11. Implement feature in small, reviewable commits strictly to satisfy failing tests.
+12. During implementation, post cadence updates every 20 minutes (or at milestone/blocker) to Slack + Linear, append journal progress, and append durable memory notes.
+13. Refactor only after tests pass.
+14. Run full local validation (unit + integration + e2e where available, plus type checks/linting).
+15. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
+16. Post final detailed implementation summary to Linear (and PR body).
+17. Post concise Slack completion update pointing to Linear/PR details.
+18. Update implementation docs as part of the change.
+19. Open PR with required template fields.
+20. Move ticket to `Needs Review` and attach PR link.
 
 ## PR Requirements (Required)
 - `Linear Ticket #` in title or body.

@@ -343,6 +343,29 @@
   - synthesized fullstack task role policy includes read-only secrets actions with `Resource: "*"` in:
     - `cdk.out/OpenclawStackopenclawcdkopenclawfullstackagentcdk08B7B2FF.template.json`
 
+## Plan: Enforce Strict Repo Scope In Ticketing And Execution
+
+- [x] Add explicit repo URL requirements for ticket-creating agents.
+- [x] Add strict repo-scope validation before code/test execution for implementation/review agents.
+- [x] Add pause/escalation behavior when repo scope is missing or ambiguous.
+- [x] Update workflow steps so repo scope is confirmed early and echoed in kickoff updates.
+- [x] Verify repo-scope contract language exists in all active agent souls.
+
+## Review: Enforce Strict Repo Scope In Ticketing And Execution
+
+- Updated:
+  - `infrastructure/agent-assets/agents/product-agent.md`
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+- Added `Repository Scope Contract (Required)` in each soul.
+- Ticket creators now require canonical Git repo URLs in Linear plus per-repo in/out-of-scope boundaries.
+- Fullstack and QA now must read the issue end-to-end and validate repo URLs/scope before any code/test work.
+- Added explicit blocker rule: if scope is missing or ambiguous, post clarification in Linear and pause.
+- Verification:
+  - `rg -n "^## Repository Scope Contract|canonical Git repo URL|missing/ambiguous" infrastructure/agent-assets/agents/*.md`
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling`
+
 - [x] Add default OpenClaw config overrides for pre-compaction memory flush.
 - [x] Add default OpenClaw config overrides for memory search provider/model.
 - [x] Ensure architect/fullstack subagent overrides retain memory settings after merge.
