@@ -25,6 +25,7 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 Notion setup runbook:
 
 - [Notion Access For OpenClaw Agents](./docs/notion-agent-access.md)
+- [Gateway Token + ECS Exec + Codex Onboarding Runbook](./docs/gateway-token-and-ecs-exec-runbook.md)
 
 ## Prerequisites
 
@@ -61,6 +62,7 @@ Manifests live in [agent-assets/agents/manifests](./agent-assets/agents/manifest
 
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`
+- `codex-agent.manifest.json`
 - `qa-agent.manifest.json`
 - `pm-agent.manifest.json`
 - `linear-dispatcher.manifest.json`
@@ -95,6 +97,12 @@ If scopes change, reinstall each Slack app.
 ```bash
 ./scripts/secrets/push-agent-secrets.sh
 ```
+
+Additional key behavior:
+
+- Agent tasks now receive the full secret JSON as `OPENCLAW_AGENT_SECRETS_JSON`.
+- `infrastructure/docker/hydrate-agent-secrets.sh` expands that JSON into env vars at runtime.
+- If you add new key/value pairs to an agent secret, they are available in the container after a new deployment without changing CDK secret mappings.
 
 ### Linear Dispatcher Secret
 
@@ -194,7 +202,7 @@ Use this when you want an agent to use a Codex subscription auth profile instead
 
 - set `model.provider` to `openai-codex`
 - set `model.model` to `gpt-5.3-codex`
-- remove `OPENAI_API_KEY` from that agent's `requiredKeys` (optional fallback only)
+- remove `OPENAI_API_KEY` from that agent's secret JSON if you want Codex OAuth only
 
 2. Deploy the agent stack (example for QA):
 

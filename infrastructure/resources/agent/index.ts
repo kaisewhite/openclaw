@@ -32,13 +32,6 @@ const readFileIfExists = (relativePath: string): string => {
   return fs.readFileSync(absolutePath, "utf8");
 };
 
-const toEcsSecretMap = (secret: secretsmanager.ISecret, keys: string[]): Record<string, ecs.Secret> => {
-  return keys.reduce<Record<string, ecs.Secret>>((accumulator, key) => {
-    accumulator[key] = ecs.Secret.fromSecretsManager(secret, key);
-    return accumulator;
-  }, {});
-};
-
 export class AgentFargateStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AgentFargateStackProps) {
     super(scope, id, props);
@@ -155,8 +148,10 @@ export class AgentFargateStack extends cdk.Stack {
     });
 
     const authProfiles = JSON.stringify(props.agent.openclaw.authProfiles ?? {});
-    const requiredSecretMap = toEcsSecretMap(secret, props.agent.secrets.requiredKeys);
-    const optionalSecretMap = toEcsSecretMap(secret, props.agent.secrets.optionalKeys ?? []);
+    const allSecretMap: Record<string, ecs.Secret> = {
+      // Inject full JSON payload; entrypoint expands all keys to env vars dynamically.
+      OPENCLAW_AGENT_SECRETS_JSON: ecs.Secret.fromSecretsManager(secret),
+    };
 
     const container = taskDefinition.addContainer(`${prefix}-container`, {
       image: ecs.ContainerImage.fromEcrRepository(repository, props.imageTag),
@@ -166,10 +161,7 @@ export class AgentFargateStack extends cdk.Stack {
         streamPrefix: props.agent.id,
       }),
       portMappings: [{ containerPort: 18789, protocol: ecs.Protocol.TCP }],
-      secrets: {
-        ...requiredSecretMap,
-        ...optionalSecretMap,
-      },
+      secrets: allSecretMap,
       interactive: true,
       environment: {
         OPENCLAW_AGENT_ID: props.agent.id,

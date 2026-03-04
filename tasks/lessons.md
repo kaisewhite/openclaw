@@ -14,3 +14,6 @@
 - For durable recall, pair prompt-level memory discipline (read/write `memory/YYYY-MM-DD.md` + memory tools) with config-level safeguards (`agents.defaults.compaction.memoryFlush` and `agents.defaults.memorySearch`) so behavior survives compaction and restarts.
 - Cross-account Secrets Manager access requires two sides: caller IAM allow on agent task role and resource/KMS policy allowance in the target account; role-side `Resource: "*"` alone is not sufficient if target-account policies block access.
 - Prevent cross-repo scope creep by requiring canonical Git repo URLs and explicit per-repo boundaries in ticket creation, and requiring execution agents to validate repo scope from the issue before any git/code/test actions.
+- When a newly added agent is renamed mid-stream, update all identity surfaces together in one pass: `id`, display name, soul path, secret name, manifest labels, dispatcher mappings, and docs; do not stop at file renames.
+- For Secrets Manager env injection, avoid hybrid key-by-key + full-payload approaches; use one canonical path (full secret JSON -> runtime env expansion) so new keys require no CDK mapping edits.
+- For runtime bootstrap logic, keep it in a dedicated script file and source it from entrypoint when environment exports must persist in the parent shell.

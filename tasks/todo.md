@@ -218,6 +218,7 @@
   - OpenClaw Slack handler drops bot-authored messages unless `channels.slack.allowBots=true`.
   - Dispatcher posts are bot-authored (`Linear Dispatcher`), so assignments never reached agent runtime for acknowledgment logic.
 - Evidence:
+
   - `openclaw/src/slack/monitor/message-handler/prepare.ts` drops bot messages when `allowBots=false`.
   - `openclaw/docs/gateway/configuration-reference.md` states default `allowBots: false`.
 - Fix:
@@ -394,3 +395,107 @@
   - `rg -n "defaultAgentDefaults|memoryFlush|memorySearch|provider: \"gemini\"" infrastructure/properties/index.ts`
   - `rg -n "^## Durable Memory Workflow|memory_search|memory_get|memory/YYYY-MM-DD.md" infrastructure/agent-assets/agents/*.md`
   - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling`
+
+## Plan: Rename Junior Fullstack Agent To Codex Agent
+
+- [x] Update agent identity in infrastructure config (`id`, display name, prompt path, and secret path).
+- [x] Update agent-facing assets (soul prompt title + Slack manifest name/display).
+- [x] Update secret example files and dispatcher mapping placeholders to `codex-agent`.
+- [x] Update README manifest list and verify no stale `junior-fullstack-agent` references remain.
+- [x] Run `cdk synth` for `OpenclawStack/openclaw-cdk`.
+
+## Review: Rename Junior Fullstack Agent To Codex Agent
+
+- Updated `infrastructure/properties/index.ts`:
+  - agent ID now `codex-agent`
+  - display name now `Codex Agent`
+  - soul prompt path now `agent-assets/agents/codex-agent.md`
+  - secret path now `/openclaw/mgmt/agents/codex-agent`
+- Updated agent assets:
+  - `infrastructure/agent-assets/agents/codex-agent.md` title now `# Codex Agent`
+  - `infrastructure/agent-assets/agents/manifests/codex-agent.manifest.json` app/bot display names now `Codex Agent`
+- Updated example secrets/mappings:
+  - `infrastructure/properties/secrets/agents.secrets.example.json` entry renamed to `codex-agent`
+  - `infrastructure/properties/secrets/linear-dispatcher.secrets.example.json` placeholder assignee map now uses `replace-linear-user-id-codex` and `codex-agent@mostrom.io`
+- Updated docs:
+  - `infrastructure/README.md` manifest list now includes `codex-agent.manifest.json`
+- Verification:
+  - `rg -n "junior-fullstack-agent|Junior Fullstack Agent|junior fullstack|JRFS" infrastructure` returns no matches.
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.
+
+## Plan: Auto-Inject Additional Agent Secret Keys
+
+- [x] Add container secret mapping for full agent secret JSON payload.
+- [x] Expand the secret JSON into environment variables in entrypoint at runtime.
+- [x] Update docs to explain how newly added secret keys propagate.
+- [x] Run `cdk synth` to verify infrastructure templates still compile.
+
+## Review: Auto-Inject Additional Agent Secret Keys
+
+- Updated [infrastructure/resources/agent/index.ts](../infrastructure/resources/agent/index.ts):
+  - added `OPENCLAW_AGENT_SECRETS_JSON` container secret mapping via `ecs.Secret.fromSecretsManager(secret)`.
+  - removed explicit per-key mappings; agents now hydrate env from the full secret payload only.
+- Updated [infrastructure/docker/openclaw-entrypoint.sh](../infrastructure/docker/openclaw-entrypoint.sh):
+  - added `hydrate_agent_secret_env()` to parse `OPENCLAW_AGENT_SECRETS_JSON` and export each key/value as env vars.
+  - unsets `OPENCLAW_AGENT_SECRETS_JSON` after expansion.
+- Updated docs:
+  - [infrastructure/README.md](../infrastructure/README.md): documented additional key auto-propagation behavior.
+  - [infrastructure/docs/gateway-token-and-ecs-exec-runbook.md](../infrastructure/docs/gateway-token-and-ecs-exec-runbook.md): added note for auto-export of new keys.
+  - [infrastructure/docs/notion-agent-access.md](../infrastructure/docs/notion-agent-access.md): removed outdated `requiredKeys`/`optionalKeys` guidance.
+- Verification:
+  - `bash -n infrastructure/docker/openclaw-entrypoint.sh` passes.
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` passes.
+
+## Plan: Document Gateway Token + ECS Exec Setup Runbook
+
+- [x] Create a dedicated markdown runbook for this exact operational flow.
+- [x] Include copy/paste commands for token generation, secret updates, secret push, force deployment, and ECS exec.
+- [x] Include in-container Codex onboarding + verification commands.
+- [x] Link the runbook from `infrastructure/README.md`.
+- [x] Verify references resolve.
+
+## Review: Document Gateway Token + ECS Exec Setup Runbook
+
+- Added runbook:
+  - `infrastructure/docs/gateway-token-and-ecs-exec-runbook.md`
+- Runbook includes:
+  - AWS context setup (`AWS_PROFILE`, `AWS_REGION`)
+  - `OPENCLAW_GATEWAY_TOKEN` generation
+  - `jq` command to update all agent entries in `agents.secrets.json`
+  - `push-agent-secrets.sh` command
+  - ECS `update-service --force-new-deployment` loop
+  - accurate `aws ecs execute-command` one-liner
+  - in-container Codex onboarding (`node /app/dist/index.js onboard --auth-choice openai-codex ...`)
+  - in-container verification (`node /app/dist/index.js models status`)
+  - troubleshooting notes for common failures
+- Updated docs index:
+  - `infrastructure/README.md` now links the runbook in the runbooks section.
+- Verification:
+  - `rg -n "Gateway Token \\+ ECS Exec \\+ Codex Onboarding Runbook|gateway-token-and-ecs-exec-runbook" infrastructure/README.md infrastructure/docs/gateway-token-and-ecs-exec-runbook.md`
+
+## Plan: Remove Key-Specific Secret Mapping
+
+- [x] Remove per-agent `requiredKeys`/`optionalKeys` secret mapping from infrastructure properties.
+- [x] Use only full secret payload injection (`OPENCLAW_AGENT_SECRETS_JSON`) for agent tasks.
+- [x] Keep entrypoint runtime export as the single source of env hydration.
+- [x] Update docs that referenced `requiredKeys`/`optionalKeys`.
+- [x] Run synth validation.
+
+## Review: Remove Key-Specific Secret Mapping
+
+- Updated [infrastructure/properties/index.ts](../infrastructure/properties/index.ts):
+  - removed `requiredKeys`/`optionalKeys` from `AgentSecretsConfig`.
+  - removed `defaultRequiredSecretKeys` and per-agent key lists.
+- Updated [infrastructure/resources/agent/index.ts](../infrastructure/resources/agent/index.ts):
+  - removed key-by-key ECS secret mappings.
+  - container now receives only `OPENCLAW_AGENT_SECRETS_JSON`.
+- Runtime behavior:
+  - [infrastructure/docker/hydrate-agent-secrets.sh](../infrastructure/docker/hydrate-agent-secrets.sh) is the single script that expands all key/value pairs from full secret JSON into env vars.
+  - [infrastructure/docker/openclaw-entrypoint.sh](../infrastructure/docker/openclaw-entrypoint.sh) sources the hydrator script before bootstrap.
+  - [infrastructure/docker/Dockerfile](../infrastructure/docker/Dockerfile) installs the hydrator script into the runtime image.
+- Updated docs:
+  - [infrastructure/README.md](../infrastructure/README.md)
+  - [infrastructure/docs/notion-agent-access.md](../infrastructure/docs/notion-agent-access.md)
+- Verification:
+  - `rg -n "requiredKeys|optionalKeys|defaultRequiredSecretKeys" infrastructure -g '!**/cdk.out/**'` returns no matches.
+  - `npx cdk synth OpenclawStack/openclaw-cdk --profile mostrom_mgmt --no-bundling` succeeds.

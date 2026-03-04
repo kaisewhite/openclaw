@@ -17,11 +17,6 @@ export interface AgentSecretsConfig {
    * Example: /openclaw/mgmt/agents/fullstack-agent
    */
   secretName: string;
-  /**
-   * Keys expected in the JSON secret object and mapped to env vars.
-   */
-  requiredKeys: string[];
-  optionalKeys?: string[];
 }
 
 export interface AgentOpenclawConfig {
@@ -50,16 +45,6 @@ export interface Project {
   agents: Agent[];
 }
 
-const defaultRequiredSecretKeys = [
-  "OPENCLAW_GATEWAY_TOKEN",
-  "SLACK_BOT_TOKEN",
-  "SLACK_APP_TOKEN",
-  "LINEAR_API_KEY",
-  "NOTION_API_KEY",
-  "GEMINI_API_KEY",
-  "GMAIL_EMAIL",
-  "GMAIL_PASSWORD",
-];
 const defaultSlackOverrides = {
   channels: {
     slack: {
@@ -175,7 +160,6 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
       },
     },
     {
@@ -199,7 +183,29 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
+      },
+    },
+    {
+      id: "codex-agent",
+      displayName: "Codex Agent",
+      description: "Scoped implementation and delivery agent",
+      runtime: {
+        cpu: 8192,
+        memoryLimitMiB: 16384,
+        desiredCount: 1,
+      },
+      model: {
+        provider: "openai-codex",
+        model: "gpt-5.3-codex",
+      },
+      openclaw: {
+        soulPromptPath: "agent-assets/agents/codex-agent.md",
+        allowTools: ["*"],
+        denyTools: [],
+        configOverrides: fullstackSubagentOverrides,
+      },
+      secrets: {
+        secretName: "/openclaw/mgmt/agents/codex-agent",
       },
     },
     {
@@ -223,7 +229,6 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "GITHUB_TOKEN"],
       },
     },
     {
@@ -247,7 +252,6 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
-        requiredKeys: [...defaultRequiredSecretKeys, "ANTHROPIC_SETUP_TOKEN", "GITHUB_TOKEN"],
       },
     },
   ],
