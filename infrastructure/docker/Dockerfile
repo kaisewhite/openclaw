@@ -21,11 +21,10 @@ RUN apt-get update && \
     (git lfs install --system || true)
 
 COPY infrastructure/docker/openclaw-entrypoint.sh /usr/local/bin/openclaw-entrypoint.sh
-COPY infrastructure/docker/hydrate-agent-secrets.sh /usr/local/bin/hydrate-agent-secrets.sh
 COPY infrastructure/docker/openclaw-bootstrap.mjs /usr/local/bin/openclaw-bootstrap.mjs
 COPY infrastructure/agent-assets/skills /opt/openclaw/skills
 
-RUN chmod 0755 /usr/local/bin/openclaw-entrypoint.sh /usr/local/bin/hydrate-agent-secrets.sh /usr/local/bin/openclaw-bootstrap.mjs && \
+RUN chmod 0755 /usr/local/bin/openclaw-entrypoint.sh /usr/local/bin/openclaw-bootstrap.mjs && \
     chown -R node:node /opt/openclaw/skills
 
 USER node

@@ -32,6 +32,23 @@ const readFileIfExists = (relativePath: string): string => {
   return fs.readFileSync(absolutePath, "utf8");
 };
 
+const generateContainerSecrets = (
+  secret: secretsmanager.ISecret,
+  directEnvKeys: string[] = [],
+): Record<string, ecs.Secret> => {
+  const containerSecrets: Record<string, ecs.Secret> = {};
+
+  for (const key of [...new Set(directEnvKeys)]) {
+    const trimmed = key.trim();
+    if (!trimmed) {
+      continue;
+    }
+    containerSecrets[trimmed] = ecs.Secret.fromSecretsManager(secret, trimmed);
+  }
+
+  return containerSecrets;
+};
+
 export class AgentFargateStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AgentFargateStackProps) {
     super(scope, id, props);
@@ -148,10 +165,10 @@ export class AgentFargateStack extends cdk.Stack {
     });
 
     const authProfiles = JSON.stringify(props.agent.openclaw.authProfiles ?? {});
-    const allSecretMap: Record<string, ecs.Secret> = {
-      // Inject full JSON payload; entrypoint expands all keys to env vars dynamically.
-      OPENCLAW_AGENT_SECRETS_JSON: ecs.Secret.fromSecretsManager(secret),
-    };
+    const allSecretMap = generateContainerSecrets(secret, props.agent.secrets.directEnvKeys);
+    if (Object.keys(allSecretMap).length === 0) {
+      throw new Error(`No directEnvKeys configured for agent '${props.agent.id}'`);
+    }
 
     const container = taskDefinition.addContainer(`${prefix}-container`, {
       image: ecs.ContainerImage.fromEcrRepository(repository, props.imageTag),

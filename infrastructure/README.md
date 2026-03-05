@@ -100,9 +100,8 @@ If scopes change, reinstall each Slack app.
 
 Additional key behavior:
 
-- Agent tasks now receive the full secret JSON as `OPENCLAW_AGENT_SECRETS_JSON`.
-- `infrastructure/docker/hydrate-agent-secrets.sh` expands that JSON into env vars at runtime.
-- If you add new key/value pairs to an agent secret, they are available in the container after a new deployment without changing CDK secret mappings.
+- Agent tasks receive explicit secret keys via ECS task-definition `secrets` mappings.
+- When adding a new key/value pair to an agent secret, also add that key to the agent's `directEnvKeys` in `properties/index.ts`, then redeploy.
 
 ### Linear Dispatcher Secret
 

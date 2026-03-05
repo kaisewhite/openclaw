@@ -43,7 +43,7 @@ jq --arg tok "$OPENCLAW_GATEWAY_TOKEN" \
 
 Note:
 
-- Additional secret keys (for example `GMAIL_APP_PASSWORD`, `GOOGLE_VOICE_NUMBER`) are auto-exported by `hydrate-agent-secrets.sh` from the full secret JSON during entrypoint bootstrap.
+- Additional secret keys require explicit ECS mapping in `properties/index.ts` (`directEnvKeys`) followed by deploy.
 
 ## 5. Force New Deployments So Tasks Reload Secrets
 

@@ -17,3 +17,5 @@
 - When a newly added agent is renamed mid-stream, update all identity surfaces together in one pass: `id`, display name, soul path, secret name, manifest labels, dispatcher mappings, and docs; do not stop at file renames.
 - For Secrets Manager env injection, avoid hybrid key-by-key + full-payload approaches; use one canonical path (full secret JSON -> runtime env expansion) so new keys require no CDK mapping edits.
 - For runtime bootstrap logic, keep it in a dedicated script file and source it from entrypoint when environment exports must persist in the parent shell.
+- For agent credentials, prefer explicit ECS task-definition `secrets` key mappings over runtime JSON hydration to reduce boot-time coupling and hidden failure modes.
+- In this repo, do not run `npm run build` in `infrastructure/` during normal verification because it emits ignored `.js`/`.d.ts` artifacts; use targeted checks (`cdk synth/list`, `tsc --noEmit` if needed) instead.

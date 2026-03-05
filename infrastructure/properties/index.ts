@@ -17,6 +17,11 @@ export interface AgentSecretsConfig {
    * Example: /openclaw/mgmt/agents/fullstack-agent
    */
   secretName: string;
+  /**
+   * Secret JSON fields to inject directly as container env vars.
+   * These are mapped via ecs.Secret.fromSecretsManager(secret, field).
+   */
+  directEnvKeys?: string[];
 }
 
 export interface AgentOpenclawConfig {
@@ -160,6 +165,20 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
+        directEnvKeys: [
+          "ANTHROPIC_SETUP_TOKEN",
+          "GEMINI_API_KEY",
+          "GITHUB_TOKEN",
+          "GMAIL_APP_PASSWORD",
+          "GMAIL_EMAIL",
+          "GMAIL_PASSWORD",
+          "GOOGLE_VOICE_NUMBER",
+          "LINEAR_API_KEY",
+          "NOTION_API_KEY",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "SLACK_APP_TOKEN",
+          "SLACK_BOT_TOKEN",
+        ],
       },
     },
     {
@@ -183,6 +202,20 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
+        directEnvKeys: [
+          "ANTHROPIC_SETUP_TOKEN",
+          "GEMINI_API_KEY",
+          "GITHUB_TOKEN",
+          "GMAIL_APP_PASSWORD",
+          "GMAIL_EMAIL",
+          "GMAIL_PASSWORD",
+          "GOOGLE_VOICE_NUMBER",
+          "LINEAR_API_KEY",
+          "NOTION_API_KEY",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "SLACK_APP_TOKEN",
+          "SLACK_BOT_TOKEN",
+        ],
       },
     },
     {
@@ -206,6 +239,20 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/codex-agent",
+        directEnvKeys: [
+          "GEMINI_API_KEY",
+          "GITHUB_TOKEN",
+          "GMAIL_APP_PASSWORD",
+          "GMAIL_EMAIL",
+          "GMAIL_PASSWORD",
+          "GOOGLE_VOICE_NUMBER",
+          "LINEAR_API_KEY",
+          "NOTION_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "SLACK_APP_TOKEN",
+          "SLACK_BOT_TOKEN",
+        ],
       },
     },
     {
@@ -229,6 +276,20 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
+        directEnvKeys: [
+          "GEMINI_API_KEY",
+          "GITHUB_TOKEN",
+          "GMAIL_APP_PASSWORD",
+          "GMAIL_EMAIL",
+          "GMAIL_PASSWORD",
+          "GOOGLE_VOICE_NUMBER",
+          "LINEAR_API_KEY",
+          "NOTION_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "SLACK_APP_TOKEN",
+          "SLACK_BOT_TOKEN",
+        ],
       },
     },
     {
@@ -252,6 +313,18 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
+        directEnvKeys: [
+          "ANTHROPIC_SETUP_TOKEN",
+          "GEMINI_API_KEY",
+          "GITHUB_TOKEN",
+          "GMAIL_EMAIL",
+          "GMAIL_PASSWORD",
+          "LINEAR_API_KEY",
+          "NOTION_API_KEY",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "SLACK_APP_TOKEN",
+          "SLACK_BOT_TOKEN",
+        ],
       },
     },
   ],

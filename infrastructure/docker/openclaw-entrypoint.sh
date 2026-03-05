@@ -79,9 +79,6 @@ cleanup_stale_session_locks() {
 OPENCLAW_STATE_DIR="$(resolve_state_dir)"
 export OPENCLAW_STATE_DIR
 export OPENCLAW_CONFIG_PATH="${OPENCLAW_CONFIG_PATH:-${OPENCLAW_STATE_DIR}/openclaw.json}"
-
-# Source the shared secret hydrator so exported vars persist in this shell.
-source /usr/local/bin/hydrate-agent-secrets.sh
 verify_required_bins
 cleanup_stale_session_locks
 
