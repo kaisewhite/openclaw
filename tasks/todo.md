@@ -141,3 +141,90 @@
 - No startup error patterns found in any current stream.
 
 ---
+## 2026-03-04/05 Full-System Elegance Review (Secrets + Slack Responsiveness + Deploy UX)
+
+- [x] Re-verify live runtime health and message delivery (last 30 minutes, `AWS_PROFILE=mostrom_mgmt`).
+- [x] Re-verify current secret injection architecture against deployed task definitions/runtime env.
+- [x] Re-evaluate Slack non-response behavior against effective runtime config and logs.
+- [x] Re-evaluate deployment utility ergonomics and failure modes.
+- [x] Produce a simpler target architecture with migration guidance.
+
+### Review
+
+- Live status at `2026-03-05T01:59:28Z`:
+  - All ECS services still healthy (`desired=1`, `running=1`).
+  - Agents have recent delivered replies in CloudWatch (e.g. fullstack replies at `2026-03-05T01:40:34Z` through `01:40:35Z`).
+- Secret injection architecture is now correct and materially simpler than hydration:
+  - ECS task definitions map individual secret keys directly.
+  - Runtime env confirms required keys are present.
+  - No `OPENCLAW_AGENT_SECRETS_JSON` hydration dependency remains.
+- Fullstack non-response root cause is channel mention gating, not secret/auth failure:
+  - Runtime config has `channels.slack.groupPolicy="open"`, `channels.slack.requireMention=null`, `channels.slack.channels={}`.
+  - OpenClaw default behavior for unset Slack `requireMention` is effectively `true` for channel messages.
+  - In-container logs show repeated `reason:"no-mention"` drops around `2026-03-05T01:40-01:41Z` in channel `C0AGWNWB2MV`.
+- Deployment utility regression confirmed:
+  - `infrastructure/scripts/codex.sh` previously filtered with `^codex/` and silently selected no stacks.
+  - Script now matches nested artifact suffix `/openclaw-codex-agent-cdk$`, fails fast on zero matches, and uses repo-local CDK CLI (`npm run cdk --`) to avoid global CLI schema mismatches.
+
+### Elegant Target Design
+
+1. Keep direct ECS secret mapping as the single secret path (already implemented).
+2. Replace per-agent duplicated secret key arrays with composable key sets (shared + provider-specific) generated from helper constants/functions.
+3. Make Slack channel behavior explicit instead of implicit:
+   - For operational channels that should always respond, set explicit channel entries with `requireMention: false`.
+   - Use `groupPolicy: "allowlist"` when possible to bound exposure/noise.
+4. Add observability for gating decisions:
+   - Promote/drop `no-mention` decisions into CloudWatch-visible structured logs/metrics so operators can distinguish "agent down" vs "policy drop" quickly.
+5. Keep deployment scripts fail-loud by default:
+   - Non-empty stack selection checks.
+   - Local pinned CDK CLI usage.
+
+
+## 2026-03-05 DirectEnvKeys Deduplication
+
+- [x] Define shared/provider secret key sets and a single helper to compose `directEnvKeys`.
+- [x] Replace per-agent repeated arrays in `infrastructure/properties/index.ts` with helper calls.
+- [x] Preserve existing effective key coverage per agent.
+- [x] Validate with `cd infrastructure && npx tsc --noEmit`.
+- [x] Document results in this file.
+
+### Review
+
+- Added shared key sets and a single `buildDirectEnvKeys(...)` helper in `infrastructure/properties/index.ts`.
+- Replaced all five repeated per-agent `directEnvKeys` arrays with helper-based composition.
+- Preserved effective key coverage:
+  - `architect-agent`, `fullstack-agent`: anthropic + shared + voice-automation keys.
+  - `codex-agent`, `qa-agent`: openai-codex + shared + voice-automation keys.
+  - `pm-agent`: anthropic + shared + voice-automation keys.
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && npx ts-node --transpile-only -e 'import { project } from "./properties"; ...'` to print resolved `directEnvKeys` per agent.
+
+## 2026-03-05 DirectEnvKeys Requirement Correction (All Agents Need Voice Keys)
+
+- [x] Update key composition so `GMAIL_APP_PASSWORD` and `GOOGLE_VOICE_NUMBER` are included for every agent.
+- [x] Remove unnecessary split/flag logic from direct env key helpers.
+- [x] Validate resolved keys and type-check.
+- [x] Document results.
+
+### Review
+
+- Moved `GMAIL_APP_PASSWORD` and `GOOGLE_VOICE_NUMBER` into the shared key set so all agents receive them by default.
+- Removed `directEnvVoiceAutomationKeys` and `includeVoiceAutomation` helper parameter.
+- Verified all agents now resolve with both voice keys via `ts-node` inspection.
+- Type-check passed: `cd infrastructure && npx tsc --noEmit`.
+
+## 2026-03-05 Cross-Account Developer Role Assume Grant
+
+- [x] Grant agent ECS task roles permission to `sts:AssumeRole` on `arn:aws:iam::896502667345:role/cross-account-developer`.
+- [x] Validate infrastructure TypeScript compiles cleanly.
+- [x] Document result and deployment note.
+
+### Review
+
+- Added a dedicated `crossAccountAssumeRolePolicy` in `infrastructure/resources/agent/index.ts` and attached it to each agent `taskRole`.
+- Policy allows `sts:AssumeRole` on `arn:aws:iam::896502667345:role/cross-account-developer`.
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"` and confirmed synthesized IAM policy contains the target role ARN.
+- Deployment note: this updates management-account task-role permissions; target account role trust policy still must trust the relevant task roles (or a trusted parent role) for assume-role calls to succeed.

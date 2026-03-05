@@ -19,3 +19,4 @@
 - For runtime bootstrap logic, keep it in a dedicated script file and source it from entrypoint when environment exports must persist in the parent shell.
 - For agent credentials, prefer explicit ECS task-definition `secrets` key mappings over runtime JSON hydration to reduce boot-time coupling and hidden failure modes.
 - In this repo, do not run `npm run build` in `infrastructure/` during normal verification because it emits ignored `.js`/`.d.ts` artifacts; use targeted checks (`cdk synth/list`, `tsc --noEmit` if needed) instead.
+- When refactoring shared secret-key composition, reconfirm global invariants with stakeholders first (e.g., keys required by every agent) instead of preserving legacy per-agent omissions by default.

@@ -136,6 +136,39 @@ const fullstackSubagentOverrides = {
   },
 } as const;
 
+const directEnvSharedKeys = [
+  "GEMINI_API_KEY",
+  "GITHUB_TOKEN",
+  "GMAIL_APP_PASSWORD",
+  "GMAIL_EMAIL",
+  "GMAIL_PASSWORD",
+  "GOOGLE_VOICE_NUMBER",
+  "LINEAR_API_KEY",
+  "NOTION_API_KEY",
+  "OPENCLAW_GATEWAY_TOKEN",
+  "SLACK_APP_TOKEN",
+  "SLACK_BOT_TOKEN",
+] as const;
+
+const directEnvProviderKeys = {
+  anthropic: ["ANTHROPIC_SETUP_TOKEN"],
+  "openai-codex": ["OPENAI_API_KEY"],
+} as const;
+
+type SupportedDirectEnvProvider = keyof typeof directEnvProviderKeys;
+
+const buildDirectEnvKeys = (params: {
+  provider: SupportedDirectEnvProvider;
+  extra?: string[];
+}): string[] => {
+  const { provider, extra = [] } = params;
+  return [...new Set([
+    ...directEnvProviderKeys[provider],
+    ...directEnvSharedKeys,
+    ...extra,
+  ])];
+};
+
 export const project: Project = {
   name: "openclaw",
   envs: ["mgmt"],
@@ -165,20 +198,9 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
-        directEnvKeys: [
-          "ANTHROPIC_SETUP_TOKEN",
-          "GEMINI_API_KEY",
-          "GITHUB_TOKEN",
-          "GMAIL_APP_PASSWORD",
-          "GMAIL_EMAIL",
-          "GMAIL_PASSWORD",
-          "GOOGLE_VOICE_NUMBER",
-          "LINEAR_API_KEY",
-          "NOTION_API_KEY",
-          "OPENCLAW_GATEWAY_TOKEN",
-          "SLACK_APP_TOKEN",
-          "SLACK_BOT_TOKEN",
-        ],
+        directEnvKeys: buildDirectEnvKeys({
+          provider: "anthropic",
+        }),
       },
     },
     {
@@ -202,20 +224,9 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
-        directEnvKeys: [
-          "ANTHROPIC_SETUP_TOKEN",
-          "GEMINI_API_KEY",
-          "GITHUB_TOKEN",
-          "GMAIL_APP_PASSWORD",
-          "GMAIL_EMAIL",
-          "GMAIL_PASSWORD",
-          "GOOGLE_VOICE_NUMBER",
-          "LINEAR_API_KEY",
-          "NOTION_API_KEY",
-          "OPENCLAW_GATEWAY_TOKEN",
-          "SLACK_APP_TOKEN",
-          "SLACK_BOT_TOKEN",
-        ],
+        directEnvKeys: buildDirectEnvKeys({
+          provider: "anthropic",
+        }),
       },
     },
     {
@@ -239,20 +250,9 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/codex-agent",
-        directEnvKeys: [
-          "GEMINI_API_KEY",
-          "GITHUB_TOKEN",
-          "GMAIL_APP_PASSWORD",
-          "GMAIL_EMAIL",
-          "GMAIL_PASSWORD",
-          "GOOGLE_VOICE_NUMBER",
-          "LINEAR_API_KEY",
-          "NOTION_API_KEY",
-          "OPENAI_API_KEY",
-          "OPENCLAW_GATEWAY_TOKEN",
-          "SLACK_APP_TOKEN",
-          "SLACK_BOT_TOKEN",
-        ],
+        directEnvKeys: buildDirectEnvKeys({
+          provider: "openai-codex",
+        }),
       },
     },
     {
@@ -276,20 +276,9 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
-        directEnvKeys: [
-          "GEMINI_API_KEY",
-          "GITHUB_TOKEN",
-          "GMAIL_APP_PASSWORD",
-          "GMAIL_EMAIL",
-          "GMAIL_PASSWORD",
-          "GOOGLE_VOICE_NUMBER",
-          "LINEAR_API_KEY",
-          "NOTION_API_KEY",
-          "OPENAI_API_KEY",
-          "OPENCLAW_GATEWAY_TOKEN",
-          "SLACK_APP_TOKEN",
-          "SLACK_BOT_TOKEN",
-        ],
+        directEnvKeys: buildDirectEnvKeys({
+          provider: "openai-codex",
+        }),
       },
     },
     {
@@ -313,18 +302,9 @@ export const project: Project = {
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
-        directEnvKeys: [
-          "ANTHROPIC_SETUP_TOKEN",
-          "GEMINI_API_KEY",
-          "GITHUB_TOKEN",
-          "GMAIL_EMAIL",
-          "GMAIL_PASSWORD",
-          "LINEAR_API_KEY",
-          "NOTION_API_KEY",
-          "OPENCLAW_GATEWAY_TOKEN",
-          "SLACK_APP_TOKEN",
-          "SLACK_BOT_TOKEN",
-        ],
+        directEnvKeys: buildDirectEnvKeys({
+          provider: "anthropic",
+        }),
       },
     },
   ],

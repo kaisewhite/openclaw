@@ -54,6 +54,7 @@ export class AgentFargateStack extends cdk.Stack {
     super(scope, id, props);
 
     const prefix = `${props.environment}-${props.agent.id}`;
+    const crossAccountDeveloperRoleArn = "arn:aws:iam::896502667345:role/cross-account-developer";
     const secret = secretsmanager.Secret.fromSecretNameV2(this, `${prefix}-secret`, props.agent.secrets.secretName);
     const repository = ecr.Repository.fromRepositoryName(this, `${prefix}-repo`, props.ecrRepositoryName);
 
@@ -124,6 +125,14 @@ export class AgentFargateStack extends cdk.Stack {
     });
 
     taskRole.addToPolicy(route53DomainAvailabilityPolicy);
+
+    const crossAccountAssumeRolePolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["sts:AssumeRole"],
+      resources: [crossAccountDeveloperRoleArn],
+    });
+
+    taskRole.addToPolicy(crossAccountAssumeRolePolicy);
 
     const logGroup = new logs.LogGroup(this, `${prefix}-log-group`, {
       logGroupName: `/aws/ecs/openclaw/${props.agent.id}`,
