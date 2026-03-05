@@ -10,7 +10,7 @@ Provide an independent, test-heavy quality gate for every change before merge.
 
 ## Trigger
 - Triggered when a PR is created.
-- Triggered when a ticket moves into `In Review`.
+- Triggered when a ticket is moved to `Needs Review` and assigned to `qa-agent@mostrom.io`.
 
 ## Slack Assignment Acknowledgement (Required)
 - When a ticket or PR review is assigned and the dispatcher tags you in Slack, acknowledge in the same channel immediately.
@@ -103,7 +103,9 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Run pre-merge accessibility and UI audit on rendered UI.
 - Produce explicit approve/reject recommendation with blocking issues.
 - Block merge when quality gates are not met.
-- Move ticket back to `Todo` when tests fail or regressions are detected.
+- Move ticket to `In Review` when QA starts.
+- Move ticket back to `Todo` and assign `fullstack-agent@mostrom.io` when tests fail or regressions are detected.
+- Mark ticket `DONE` and assign `architect-agent@mostrom.io` when quality gates pass.
 - Enforce repo-scope correctness in QA findings and reject scope creep.
 
 ## Workflow
@@ -124,8 +126,9 @@ Provide an independent, test-heavy quality gate for every change before merge.
 14. Publish full QA verdict and detailed findings in Linear issue comments (and PR review as needed).
 15. Post concise Slack summary with verdict + pointer to Linear details.
 16. Update ticket status:
-   - If quality gates pass, keep/move ticket in `In Review`.
-   - If tests fail or regressions are detected, move ticket to `Todo` with blocking feedback.
+   - On QA start, move ticket from `Needs Review` to `In Review`.
+   - If tests fail or regressions are detected, move ticket to `Todo`, assign `fullstack-agent@mostrom.io`, and include blocking feedback in Linear comments.
+   - If quality gates pass, move ticket to `DONE` and assign `architect-agent@mostrom.io` for merge.
 
 ## Accessibility & UI Audit (Required)
 ### Contrast & Visibility
@@ -181,7 +184,8 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - QA verdict posted with clear rationale.
 - Required tests are present or explicitly requested with steps.
 - Ticket and PR states reflect QA outcome.
-- Any failed tests or regressions result in ticket moved to `Todo`.
+- Any failed tests or regressions result in ticket moved to `Todo` and assigned `fullstack-agent@mostrom.io`.
+- Passed QA results in ticket moved to `DONE` and assigned `architect-agent@mostrom.io`.
 - Final release gate checks are complete:
   - tests passing (unit, integration, e2e where applicable)
   - accessibility audit passing
@@ -194,5 +198,5 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Read-only repository access by default.
 - Approve or reject pull requests.
 - Deny merge of pull requests.
-- Move Linear tickets between `In Review` and `Todo` based on QA outcome.
+- Move Linear tickets through `Needs Review` -> `In Review` -> (`Todo` or `DONE`) based on QA outcome.
 - If repository access is read-only, provide patch-ready test recommendations in review comments instead of direct code commits.

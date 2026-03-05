@@ -228,3 +228,68 @@
   - `cd infrastructure && npx tsc --noEmit`
   - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"` and confirmed synthesized IAM policy contains the target role ARN.
 - Deployment note: this updates management-account task-role permissions; target account role trust policy still must trust the relevant task roles (or a trusted parent role) for assume-role calls to succeed.
+
+## 2026-03-05 Gateway Token Mismatch (Subagent Spawn Blocker)
+
+- [x] Triage `qa-agent` token mismatch errors from CloudWatch + container state.
+- [x] Identify root cause in bootstrap/config behavior.
+- [x] Implement permanent fix in bootstrap.
+- [x] Apply immediate runtime mitigation to running agents.
+- [x] Verify token alignment and post-fix log behavior.
+
+### Review
+
+- Error reproduced from logs at `2026-03-05T16:41:32Z` on `qa-agent`:
+  - `[ws] unauthorized ... reason=token_mismatch`
+  - `gateway connect failed: unauthorized: gateway token mismatch`
+- Root cause:
+  - Agent env token (`OPENCLAW_GATEWAY_TOKEN`) differed from persisted `gateway.auth.token` in `/home/node/.openclaw/openclaw.json`.
+  - Some local backend gateway-client paths can fall back to config token, causing localhost auth mismatch.
+- Permanent code fix:
+  - `infrastructure/docker/openclaw-bootstrap.mjs` now writes `gateway.auth.token` from `OPENCLAW_GATEWAY_TOKEN` during bootstrap reconciliation.
+- Immediate mitigation applied in running tasks:
+  - Synced `gateway.auth.token` to `env.OPENCLAW_GATEWAY_TOKEN` in each agent's `openclaw.json` via ECS Exec.
+- Verification:
+  - All services now show token parity: `architect`, `fullstack`, `codex`, `qa`, `pm` => `env token == config token`.
+  - `qa-agent` shows no new `token_mismatch`/`gateway connect failed` events after restart; latest shows normal Slack socket connect.
+
+## 2026-03-05 Soul Prompt Workflow Update (Linear Ownership + Status Flow)
+
+- [x] Update Architect soul with PR merge responsibility after DONE assignment and conflict resolution expectations.
+- [x] Update Architect soul with explicit task-splitting ownership between Fullstack and Codex.
+- [x] Update Fullstack and Codex souls to require handoff to QA (`Needs Review` + assign `qa-agent@mostrom.io`).
+- [x] Update QA soul with `Needs Review` -> `In Review` flow and pass/fail routing.
+- [x] Update PM soul with backlog creation + assignment to Architect (`architect-agent@mostrom.io`).
+- [x] Verify edited markdown for consistency.
+
+### Review
+
+- Updated:
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/codex-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+- Architect now explicitly:
+  - splits implementation assignments between `fullstack-agent@mostrom.io` and `codex-agent@mostrom.io`
+  - merges PRs into `dev` after QA passes (`DONE` + reassigned to Architect), including merge-conflict handling.
+- Fullstack/Codex now explicitly move to `Needs Review` and assign `qa-agent@mostrom.io`.
+- QA now explicitly moves `Needs Review` -> `In Review`, then:
+  - fail/regression: `Todo` + assign `fullstack-agent@mostrom.io` with reasons
+  - pass: `DONE` + assign `architect-agent@mostrom.io`
+- PM now explicitly creates in `Backlog` and assigns `architect-agent@mostrom.io`.
+
+## 2026-03-05 Secret Push Guardrails (No-Image Dependency)
+
+- [x] Verify which secret key was missing in AWS and local manifest.
+- [x] Add missing PM keys (`GMAIL_APP_PASSWORD`, `GOOGLE_VOICE_NUMBER`) to `agents.secrets.json` and push.
+- [x] Add fail-fast required-key validation to `scripts/secrets/push-agent-secrets.sh`.
+- [x] Clarify in image build/push script that it does not push secrets.
+- [x] Re-run secret push script to validate end-to-end behavior.
+
+### Review
+
+- Root cause was manifest content, not image build: `pm-agent` secret values were missing required keys.
+- Secrets now updated in AWS (`/openclaw/mgmt/agents/pm-agent` contains both keys).
+- `push-agent-secrets.sh` now fails before any push when required keys are missing.
+- `build-push-openclaw-image.sh` now prints explicit notes that secret sync is a separate step.

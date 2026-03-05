@@ -16,6 +16,9 @@ DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64}"
 CLUSTER_NAME="${OPENCLAW_ECS_CLUSTER:-openclaw}"
 OPENCLAW_INSTALL_BROWSER="${OPENCLAW_INSTALL_BROWSER:-1}"
 
+echo "NOTE: This script builds/pushes images and forces ECS deployments."
+echo "NOTE: It does NOT push/update Secrets Manager values. Run ./scripts/secrets/push-agent-secrets.sh for secret changes."
+
 if ! command -v aws >/dev/null 2>&1; then
   echo "ERROR: aws CLI not found." >&2
   exit 1

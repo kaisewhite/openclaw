@@ -20,3 +20,5 @@
 - For agent credentials, prefer explicit ECS task-definition `secrets` key mappings over runtime JSON hydration to reduce boot-time coupling and hidden failure modes.
 - In this repo, do not run `npm run build` in `infrastructure/` during normal verification because it emits ignored `.js`/`.d.ts` artifacts; use targeted checks (`cdk synth/list`, `tsc --noEmit` if needed) instead.
 - When refactoring shared secret-key composition, reconfirm global invariants with stakeholders first (e.g., keys required by every agent) instead of preserving legacy per-agent omissions by default.
+- When rotating/injecting `OPENCLAW_GATEWAY_TOKEN`, also reconcile persisted `gateway.auth.token` in agent state config; env/config drift can break localhost gateway-client auth (`token_mismatch`) and block subagent spawning.
+- `build-push-openclaw-image.sh` only handles image/deployment rollout; secret value changes must go through `scripts/secrets/push-agent-secrets.sh`, and that script should fail fast on missing required keys to prevent ECS secret-injection startup failures.

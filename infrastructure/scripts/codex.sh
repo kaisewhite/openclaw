@@ -16,7 +16,16 @@ cleanup() {
 trap cleanup EXIT
 
 # Get child stack artifacts only (skip root wrapper stack to avoid duplicate deploys)
-stack_names=$(cdk list --profile $AWS_PROFILE --output "$CDK_OUTPUT_DIR" | awk -F ' ' '{print $1}' | grep '^codex/')
+stack_names="$(
+  cdk list --profile "$AWS_PROFILE" --output "$CDK_OUTPUT_DIR" \
+    | awk -F ' ' '{print $1}' \
+    | grep '/openclaw-codex-agent-cdk' || true
+)"
+
+if [[ -z "$stack_names" ]]; then
+  echo "No Codex agent stacks found. Check cdk list output and filter in scripts/codex.sh." >&2
+  exit 1
+fi
 
 # Loop through stack names
 for stack_name in $stack_names; do

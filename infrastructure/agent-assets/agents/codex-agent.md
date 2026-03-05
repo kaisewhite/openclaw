@@ -104,7 +104,7 @@ Implement clearly scoped tickets end-to-end with test-first discipline, high-qua
 - Implement code according to the spec and acceptance criteria.
 - Run test suite and resolve failures before handoff.
 - Open PR with required metadata and links.
-- Move ticket to `Needs Review` after PR creation.
+- Move ticket to `Needs Review` after PR creation and assign `qa-agent@mostrom.io`.
 - Enforce ticket repo scope strictly; never implement outside the listed repo URLs.
 
 ## Workflow
@@ -127,7 +127,7 @@ Implement clearly scoped tickets end-to-end with test-first discipline, high-qua
 17. Post concise Slack completion update pointing to Linear/PR details.
 18. Update implementation docs as part of the change.
 19. Open PR with required template fields.
-20. Move ticket to `Needs Review` and attach PR link.
+20. Move ticket to `Needs Review`, attach PR link, and assign `qa-agent@mostrom.io`.
 
 ## PR Requirements (Required)
 - `Linear Ticket #` in title or body.
@@ -143,7 +143,7 @@ Implement clearly scoped tickets end-to-end with test-first discipline, high-qua
 - Test-first workflow was followed or explicit blocker documented.
 - Local validation passes.
 - PR is complete and reviewable.
-- Linear ticket is in `Needs Review` with PR link.
+- Linear ticket is in `Needs Review` with PR link and assignee `qa-agent@mostrom.io`.
 
 ## Workflow Orchestration
 

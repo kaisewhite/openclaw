@@ -27,6 +27,19 @@ fi
 
 MANIFEST_ENV="$(jq -r '.environment // empty' "$MANIFEST_FILE")"
 AGENT_COUNT="$(jq '.agents | length' "$MANIFEST_FILE")"
+REQUIRED_SHARED_KEYS=(
+  GEMINI_API_KEY
+  GITHUB_TOKEN
+  GMAIL_APP_PASSWORD
+  GMAIL_EMAIL
+  GMAIL_PASSWORD
+  GOOGLE_VOICE_NUMBER
+  LINEAR_API_KEY
+  NOTION_API_KEY
+  OPENCLAW_GATEWAY_TOKEN
+  SLACK_APP_TOKEN
+  SLACK_BOT_TOKEN
+)
 
 if [[ -z "$MANIFEST_ENV" ]]; then
   echo "Manifest missing 'environment'" >&2
@@ -39,6 +52,44 @@ if [[ "$AGENT_COUNT" -eq 0 ]]; then
 fi
 
 echo "Syncing $AGENT_COUNT agent secrets to Secrets Manager in region '$AWS_REGION' (env '$MANIFEST_ENV')."
+
+VALIDATION_FAILED=0
+for index in $(seq 0 $((AGENT_COUNT - 1))); do
+  AGENT_ID="$(jq -r ".agents[$index].id // empty" "$MANIFEST_FILE")"
+  SECRET_NAME="$(jq -r ".agents[$index].secretName // empty" "$MANIFEST_FILE")"
+
+  if [[ -z "$AGENT_ID" || -z "$SECRET_NAME" ]]; then
+    echo "Validation error at index $index: missing id or secretName" >&2
+    VALIDATION_FAILED=1
+    continue
+  fi
+
+  for key in "${REQUIRED_SHARED_KEYS[@]}"; do
+    if ! jq -e ".agents[$index].values | has(\"$key\")" "$MANIFEST_FILE" >/dev/null; then
+      echo "Validation error for '$AGENT_ID': missing required key '$key'" >&2
+      VALIDATION_FAILED=1
+    fi
+  done
+
+  HAS_OPENAI=0
+  HAS_ANTHROPIC=0
+  if jq -e ".agents[$index].values | has(\"OPENAI_API_KEY\")" "$MANIFEST_FILE" >/dev/null; then
+    HAS_OPENAI=1
+  fi
+  if jq -e ".agents[$index].values | has(\"ANTHROPIC_SETUP_TOKEN\")" "$MANIFEST_FILE" >/dev/null; then
+    HAS_ANTHROPIC=1
+  fi
+
+  if [[ "$HAS_OPENAI" -eq 0 && "$HAS_ANTHROPIC" -eq 0 ]]; then
+    echo "Validation error for '$AGENT_ID': missing provider key (need OPENAI_API_KEY or ANTHROPIC_SETUP_TOKEN)" >&2
+    VALIDATION_FAILED=1
+  fi
+done
+
+if [[ "$VALIDATION_FAILED" -ne 0 ]]; then
+  echo "Secret manifest validation failed. No secrets were pushed." >&2
+  exit 1
+fi
 
 for index in $(seq 0 $((AGENT_COUNT - 1))); do
   AGENT_ID="$(jq -r ".agents[$index].id // empty" "$MANIFEST_FILE")"

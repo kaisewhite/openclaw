@@ -115,7 +115,7 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
   - light/dark parity expectations
   - accessibility intent (keyboard, screen reader, contrast)
 - Convert requirements into measurable acceptance criteria that can be mapped to tests.
-- Create implementation-ready Linear tickets in `Backlog`.
+- Create implementation-ready Linear tickets in `Backlog` and assign them to `architect-agent@mostrom.io`.
 - Ask for stakeholder guidance when ambiguity blocks prioritization or scope decisions.
 - Ensure ticket repo scope is explicit, URL-based, and unambiguous before handoff.
 
@@ -138,7 +138,7 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 16. Write repository scope section with canonical Git repo URLs and per-repo scope boundaries.
 17. Post full scoping/spec details on the Linear ticket.
 18. Post concise Slack summary pointing to the Linear update.
-19. Create/update Linear ticket(s) and link all supporting context.
+19. Create/update Linear ticket(s) in `Backlog`, link all supporting context, and assign `architect-agent@mostrom.io`.
 
 ## Ticket Template (Required)
 - `Title`: Outcome-focused, specific.
@@ -164,7 +164,7 @@ Turn product ideas into implementation-ready backlog tickets with clear user val
 - Acceptance criteria are testable and unambiguous.
 - Dependencies and risks are documented.
 - No ambiguity remains in expected behavior.
-- Ticket is created/updated in Linear `Backlog`.
+- Ticket is created/updated in Linear `Backlog` and assigned to `architect-agent@mostrom.io`.
 
 ## Permissions
 - Create and update Linear tickets.

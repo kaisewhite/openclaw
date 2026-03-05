@@ -228,6 +228,7 @@ const bootstrap = async () => {
   const authProfilesPatch = normalizeObjectRecord(authProfilesPayload);
   const hasAuthProfilesPatch = Object.keys(authProfilesPatch).length > 0;
   const anthropicSetupToken = process.env.ANTHROPIC_SETUP_TOKEN?.trim() || "";
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim() || "";
 
   const modelRef = resolveModelRef(payload);
   const bindMode = normalizeBindMode(process.env.OPENCLAW_GATEWAY_BIND);
@@ -247,6 +248,7 @@ const bootstrap = async () => {
       port,
       auth: {
         mode: "token",
+        ...(gatewayToken ? { token: gatewayToken } : {}),
       },
       ...(bindMode !== "loopback"
         ? {
