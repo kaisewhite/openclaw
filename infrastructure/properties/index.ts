@@ -80,6 +80,14 @@ const defaultPluginsOverrides = {
   },
 } as const;
 
+const hostedBrowserOverrides = {
+  browser: {
+    defaultProfile: "openclaw",
+    headless: true,
+    noSandbox: true,
+  },
+} as const;
+
 const defaultAgentDefaults = {
   compaction: {
     mode: "safeguard",
@@ -103,6 +111,7 @@ const defaultOpenclawOverrides = {
   ...defaultSlackOverrides,
   ...defaultSkillsOverrides,
   ...defaultPluginsOverrides,
+  ...hostedBrowserOverrides,
   agents: {
     defaults: defaultAgentDefaults,
   },

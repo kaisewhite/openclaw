@@ -293,3 +293,24 @@
 - Secrets now updated in AWS (`/openclaw/mgmt/agents/pm-agent` contains both keys).
 - `push-agent-secrets.sh` now fails before any push when required keys are missing.
 - `build-push-openclaw-image.sh` now prints explicit notes that secret sync is a separate step.
+
+## 2026-03-06 Fullstack Browser Tool Unavailable (Extension Relay Default)
+
+- [x] Confirm root cause from code/config path for `profile "chrome"` relay behavior in ECS.
+- [x] Update agent runtime config overrides to default hosted agents to local launchable browser profile.
+- [x] Verify infrastructure TypeScript compile/synth still passes.
+- [x] Document results and rollout notes.
+
+### Review
+
+- Root cause confirmed in browser runtime code: default browser profile is `chrome` (extension driver), which throws when no tab is attached (`Chrome extension relay is running, but no tab is connected`), and hosted ECS agents cannot satisfy that interaction.
+- Applied infra fix in `infrastructure/properties/index.ts` by adding hosted browser overrides to agent config payload:
+  - `browser.defaultProfile = "openclaw"`
+  - `browser.headless = true`
+  - `browser.noSandbox = true`
+- This applies to all managed agents using `defaultOpenclawOverrides` / subagent variants, preventing hosted agents from defaulting to extension relay mode.
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
+  - Synth output confirms `OPENCLAW_JSON` now includes `"browser":{"defaultProfile":"openclaw","headless":true,"noSandbox":true}` for `fullstack-agent`.
+- Rollout note: deploy affected agent stacks so running ECS tasks pick up the new `OPENCLAW_JSON` env value.
