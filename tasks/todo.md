@@ -314,3 +314,27 @@
   - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
   - Synth output confirms `OPENCLAW_JSON` now includes `"browser":{"defaultProfile":"openclaw","headless":true,"noSandbox":true}` for `fullstack-agent`.
 - Rollout note: deploy affected agent stacks so running ECS tasks pick up the new `OPENCLAW_JSON` env value.
+
+## 2026-03-07 Skill Generalization (Remove Prototype Focus)
+
+- [x] Add and track implementation plan for skill renames and rewrites.
+- [x] Rename prototype skill directories to role-based names.
+- [x] Rewrite each renamed skill's `SKILL.md` to define general role execution responsibilities.
+- [x] Rewrite each renamed skill's `AGENTS.md` intro/workflow/outputs to match non-prototype scope.
+- [x] Verify no stale `prototype-*` skill references remain under `infrastructure/agent-assets/skills`.
+- [x] Document verification results in this file.
+
+### Review
+
+- Renamed skill directories:
+  - `infrastructure/agent-assets/skills/prototype-fullstack-engineer` -> `infrastructure/agent-assets/skills/fullstack-engineer`
+  - `infrastructure/agent-assets/skills/prototype-lead-architect` -> `infrastructure/agent-assets/skills/lead-architect`
+  - `infrastructure/agent-assets/skills/prototype-project-manager` -> `infrastructure/agent-assets/skills/project-manager`
+  - `infrastructure/agent-assets/skills/prototype-qa-engineer` -> `infrastructure/agent-assets/skills/qa-engineer`
+- Rewrote role definitions in all renamed `SKILL.md` files:
+  - Updated frontmatter `name` values to new role names.
+  - Replaced prototype-only language (clickable demo, static mock data, no backend) with production/general execution responsibilities.
+  - Updated rules/process/deliverables for end-to-end role execution.
+- Rewrote role intros/workflows/outputs in all renamed `AGENTS.md` files to match non-prototype responsibilities.
+- Verification:
+  - `rg -n "prototype-|-only prototype|Prototype" infrastructure/agent-assets/skills -S` returned no matches.
