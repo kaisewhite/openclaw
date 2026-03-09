@@ -1,1 +1,4 @@
 infrastructure/cdk.out*
+infrastructure/helpers/mac-agent/architect-agent.manifest.json
+infrastructure/helpers/mac-agent/slack.config.sh
+infrastructure/helpers/mac-agent/values.json
