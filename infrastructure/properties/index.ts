@@ -96,14 +96,18 @@ const defaultAgentDefaults = {
       enabled: true,
       softThresholdTokens: 6000,
       systemPrompt: "Session nearing compaction. Store durable memories now.",
-      prompt:
-        "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
+      prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
     },
   },
   memorySearch: {
     enabled: true,
     provider: "gemini",
     model: "gemini-embedding-001",
+  },
+  subagents: {
+    maxConcurrent: 10,
+    runTimeoutSeconds: 900,
+    archiveAfterMinutes: 60,
   },
 } as const;
 
@@ -114,34 +118,6 @@ const defaultOpenclawOverrides = {
   ...hostedBrowserOverrides,
   agents: {
     defaults: defaultAgentDefaults,
-  },
-} as const;
-
-const architectSubagentOverrides = {
-  ...defaultOpenclawOverrides,
-  agents: {
-    defaults: {
-      ...defaultAgentDefaults,
-      subagents: {
-        maxConcurrent: 3,
-        runTimeoutSeconds: 900,
-        archiveAfterMinutes: 60,
-      },
-    },
-  },
-} as const;
-
-const fullstackSubagentOverrides = {
-  ...defaultOpenclawOverrides,
-  agents: {
-    defaults: {
-      ...defaultAgentDefaults,
-      subagents: {
-        maxConcurrent: 3,
-        runTimeoutSeconds: 900,
-        archiveAfterMinutes: 60,
-      },
-    },
   },
 } as const;
 
@@ -166,16 +142,9 @@ const directEnvProviderKeys = {
 
 type SupportedDirectEnvProvider = keyof typeof directEnvProviderKeys;
 
-const buildDirectEnvKeys = (params: {
-  provider: SupportedDirectEnvProvider;
-  extra?: string[];
-}): string[] => {
+const buildDirectEnvKeys = (params: { provider: SupportedDirectEnvProvider; extra?: string[] }): string[] => {
   const { provider, extra = [] } = params;
-  return [...new Set([
-    ...directEnvProviderKeys[provider],
-    ...directEnvSharedKeys,
-    ...extra,
-  ])];
+  return [...new Set([...directEnvProviderKeys[provider], ...directEnvSharedKeys, ...extra])];
 };
 
 export const project: Project = {
@@ -191,8 +160,8 @@ export const project: Project = {
       displayName: "Architect Agent",
       description: "Architecture and technical design review agent",
       runtime: {
-        cpu: 8192,
-        memoryLimitMiB: 16384,
+        cpu: 2048,
+        memoryLimitMiB: 4096,
         desiredCount: 1,
       },
       model: {
@@ -203,7 +172,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/architect-agent.md",
         allowTools: ["*"],
         denyTools: [],
-        configOverrides: architectSubagentOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
@@ -229,7 +198,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/senior-fullstack-agent.md",
         allowTools: ["*"],
         denyTools: [],
-        configOverrides: fullstackSubagentOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
@@ -255,7 +224,7 @@ export const project: Project = {
         soulPromptPath: "agent-assets/agents/codex-agent.md",
         allowTools: ["*"],
         denyTools: [],
-        configOverrides: fullstackSubagentOverrides,
+        configOverrides: defaultOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/codex-agent",
@@ -269,8 +238,8 @@ export const project: Project = {
       displayName: "QA Agent",
       description: "Automated quality and regression gate",
       runtime: {
-        cpu: 2048,
-        memoryLimitMiB: 4096,
+        cpu: 8192,
+        memoryLimitMiB: 16384,
         desiredCount: 1,
       },
       model: {
