@@ -22,3 +22,4 @@
 - When refactoring shared secret-key composition, reconfirm global invariants with stakeholders first (e.g., keys required by every agent) instead of preserving legacy per-agent omissions by default.
 - When rotating/injecting `OPENCLAW_GATEWAY_TOKEN`, also reconcile persisted `gateway.auth.token` in agent state config; env/config drift can break localhost gateway-client auth (`token_mismatch`) and block subagent spawning.
 - `build-push-openclaw-image.sh` only handles image/deployment rollout; secret value changes must go through `scripts/secrets/push-agent-secrets.sh`, and that script should fail fast on missing required keys to prevent ECS secret-injection startup failures.
+- When a permissions request is ambiguous, resolve whether the user means availability gating, default elevated state, or actual exec security/approval behavior before patching; "full permissions" requires all three to line up.

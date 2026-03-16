@@ -80,6 +80,22 @@ const defaultPluginsOverrides = {
   },
 } as const;
 
+const defaultToolsOverrides = {
+  tools: {
+    elevated: {
+      enabled: true,
+      allowFrom: {
+        slack: ["*"],
+      },
+    },
+    exec: {
+      host: "gateway",
+      security: "full",
+      ask: "off",
+    },
+  },
+} as const;
+
 const hostedBrowserOverrides = {
   browser: {
     defaultProfile: "openclaw",
@@ -104,6 +120,7 @@ const defaultAgentDefaults = {
     provider: "gemini",
     model: "gemini-embedding-001",
   },
+  elevatedDefault: "full",
   subagents: {
     maxConcurrent: 10,
     runTimeoutSeconds: 900,
@@ -115,6 +132,7 @@ const defaultOpenclawOverrides = {
   ...defaultSlackOverrides,
   ...defaultSkillsOverrides,
   ...defaultPluginsOverrides,
+  ...defaultToolsOverrides,
   ...hostedBrowserOverrides,
   agents: {
     defaults: defaultAgentDefaults,

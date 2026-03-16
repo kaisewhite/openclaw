@@ -338,3 +338,36 @@
 - Rewrote role intros/workflows/outputs in all renamed `AGENTS.md` files to match non-prototype responsibilities.
 - Verification:
   - `rg -n "prototype-|-only prototype|Prototype" infrastructure/agent-assets/skills -S` returned no matches.
+
+## 2026-03-14 Agent Full Permissions Defaults
+
+- [x] Confirm the documented OpenClaw config path for elevated/full-permission behavior.
+- [x] Update shared managed-agent OpenClaw overrides so all agents default to full elevated execution.
+- [x] Ensure exec defaults match unsandboxed Fargate runtime requirements (`gateway` host, `full` security, no approval prompts).
+- [x] Verify the infrastructure config compiles and that generated agent config contains the new keys.
+- [x] Document results in this file.
+
+### Review
+
+- Docs used:
+  - `openclaw/docs/tools/elevated.md`
+  - `openclaw/docs/tools/exec.md`
+  - `openclaw/docs/gateway/sandbox-vs-tool-policy-vs-elevated.md`
+- Implemented shared managed-agent defaults in `infrastructure/properties/index.ts`:
+  - `agents.defaults.elevatedDefault = "full"`
+  - `tools.elevated.enabled = true`
+  - `tools.elevated.allowFrom.slack = ["*"]`
+  - `tools.exec.host = "gateway"`
+  - `tools.exec.security = "full"`
+  - `tools.exec.ask = "off"`
+- Rationale:
+  - Elevated docs define `agents.defaults.elevatedDefault` as the default session elevated level.
+  - Elevated gating still requires `tools.elevated.allowFrom.<provider>`.
+  - Exec docs state sandboxing is off by default and `host=sandbox` is not appropriate when sandbox runtime is unavailable; hosted ECS agents need explicit gateway-host exec defaults.
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && npx ts-node --transpile-only -e 'const { project } = require("./properties"); ...'`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
+  - Synth output for `OPENCLAW_JSON` includes:
+    - `"tools":{"elevated":{"enabled":true,"allowFrom":{"slack":["*"]}},"exec":{"host":"gateway","security":"full","ask":"off"}}`
+    - `"agents":{"defaults":{"elevatedDefault":"full", ...}}`
