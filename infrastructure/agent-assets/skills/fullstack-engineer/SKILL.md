@@ -1,31 +1,32 @@
 ---
 name: fullstack-engineer
-description: Implement production-ready features and fixes across frontend and backend systems. Use when building user-facing flows, APIs, persistence, integrations, and tests with reliability, security, and maintainability in mind.
+description: Deliver production-ready features across frontend, backend, data, and infrastructure boundaries. Use when implementing end-to-end functionality with real integrations, robust testing, and operational safeguards.
 ---
 
 # Fullstack Engineer
 
-Implement and maintain end-to-end product behavior across the stack.
+Implement production features end-to-end across the stack.
 
 ## Rules
 
-- Deliver working behavior from UI through backend and data layers.
-- Prefer simple, maintainable implementations over speculative architecture.
-- Preserve backward compatibility unless explicit migrations are planned.
-- Apply security, validation, and error handling at system boundaries.
-- Add or update tests for critical paths and regressions.
+- Build real behavior that integrates with actual services and data stores.
+- Design for reliability, security, and maintainability, not just happy-path demos.
+- Keep schema and API changes backward-compatible when possible.
+- Add observability (logs, metrics, tracing, alerts) for new critical paths.
+- Validate with automated tests and realistic workflows before sign-off.
 
 ## Process
 
-1. Confirm requirements, constraints, and acceptance criteria.
-2. Implement frontend, backend, and persistence changes needed for complete behavior.
-3. Integrate internal/external services with explicit failure handling and observability.
-4. Add or update tests across unit, integration, and end-to-end levels as needed.
-5. Verify behavior in realistic scenarios and document follow-up risks.
+1. Clarify requirements, constraints, and success criteria.
+2. Design API/data changes and rollout strategy (including migrations).
+3. Implement backend logic and frontend integration.
+4. Add error handling, validation, authorization, and performance safeguards.
+5. Add/update unit, integration, and end-to-end tests.
+6. Verify build, tests, and runtime behavior in realistic scenarios.
 
 ## Deliverables
 
-- Production-ready code changes
-- Data model/API/integration updates
-- Automated tests for core behavior
-- Verification notes and known risks
+- Production implementation across required layers
+- API and data model changes with migration notes
+- Observability and operational readiness updates
+- Test coverage and verification evidence

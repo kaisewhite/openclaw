@@ -17,9 +17,10 @@ Infrastructure-as-code for running isolated OpenClaw agents on ECS Fargate, plus
 
 - Agent definitions: [properties/index.ts](./properties/index.ts)
 - Agent prompts: [agent-assets/agents](./agent-assets/agents)
+- Shared workflow prompt: [agent-assets/shared](./agent-assets/shared)
 - Agent skills: [agent-assets/skills](./agent-assets/skills)
-- Slack app manifests: [agent-assets/agents/manifests](./agent-assets/agents/manifests)
-- Agent credentials stubs: [agent-assets/agents/credentials](./agent-assets/agents/credentials)
+- Slack app manifests: [agent-assets/manifests](./agent-assets/manifests)
+- Agent credentials stubs: [agent-assets/credentials](./agent-assets/credentials)
 - Integration runbooks: [docs](./docs)
 
 Notion setup runbook:
@@ -58,7 +59,7 @@ Scripts:
 
 ## Slack Manifests
 
-Manifests live in [agent-assets/agents/manifests](./agent-assets/agents/manifests), including:
+Manifests live in [agent-assets/manifests](./agent-assets/manifests), including:
 
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`

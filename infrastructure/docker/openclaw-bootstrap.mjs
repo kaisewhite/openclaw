@@ -24,8 +24,14 @@ const AGENT_DIR =
 const SESSIONS_DIR = path.join(path.dirname(AGENT_DIR), "sessions");
 const AUTH_PROFILES_PATH =
   process.env.OPENCLAW_AUTH_PROFILES_PATH?.trim() || path.join(AGENT_DIR, "auth-profiles.json");
+const AGENTS_PATH = process.env.OPENCLAW_AGENTS_PATH?.trim() || path.join(WORKSPACE_DIR, "AGENTS.md");
 const SOUL_PATH = process.env.OPENCLAW_SOUL_PATH?.trim() || path.join(WORKSPACE_DIR, "SOUL.md");
 const TOOLS_PATH = process.env.OPENCLAW_TOOLS_PATH?.trim() || path.join(WORKSPACE_DIR, "TOOLS.md");
+const IDENTITY_PATH =
+  process.env.OPENCLAW_IDENTITY_PATH?.trim() || path.join(WORKSPACE_DIR, "IDENTITY.md");
+const USER_PATH = process.env.OPENCLAW_USER_PATH?.trim() || path.join(WORKSPACE_DIR, "USER.md");
+const HEARTBEAT_PATH =
+  process.env.OPENCLAW_HEARTBEAT_PATH?.trim() || path.join(WORKSPACE_DIR, "HEARTBEAT.md");
 
 const KNOWN_BIND_MODES = new Set(["loopback", "lan", "tailnet", "auto", "custom"]);
 
@@ -181,6 +187,15 @@ const writeTextFile = async (filePath, value) => {
   await fs.writeFile(filePath, value, "utf8");
 };
 
+const writeWorkspaceDocFromEnv = async (envName, filePath) => {
+  const value = process.env[envName];
+  if (typeof value !== "string" || value.trim() === "") {
+    return;
+  }
+  const content = value.endsWith("\n") ? value : `${value}\n`;
+  await writeTextFile(filePath, content);
+};
+
 const pruneLegacyInvalidConfigKeys = (config) => {
   if (!isObjectRecord(config)) {
     return [];
@@ -304,17 +319,24 @@ const bootstrap = async () => {
     console.log(`[bootstrap] Removed stale config keys: ${removedKeys.join(", ")}`);
   }
 
-  const soul = process.env.OPENCLAW_SOUL_MD;
-  if (typeof soul === "string" && soul.trim() !== "") {
-    const content = soul.endsWith("\n") ? soul : `${soul}\n`;
-    await writeTextFile(SOUL_PATH, content);
-  }
+  await writeWorkspaceDocFromEnv("OPENCLAW_AGENTS_MD", AGENTS_PATH);
+  await writeWorkspaceDocFromEnv("OPENCLAW_SOUL_MD", SOUL_PATH);
+  await writeWorkspaceDocFromEnv("OPENCLAW_TOOLS_MD", TOOLS_PATH);
+  await writeWorkspaceDocFromEnv("OPENCLAW_USER_MD", USER_PATH);
+  await writeWorkspaceDocFromEnv("OPENCLAW_HEARTBEAT_MD", HEARTBEAT_PATH);
 
-  const toolsDoc = process.env.OPENCLAW_TOOLS_MD;
-  if (typeof toolsDoc === "string" && toolsDoc.trim() !== "") {
-    const content = toolsDoc.endsWith("\n") ? toolsDoc : `${toolsDoc}\n`;
-    await writeTextFile(TOOLS_PATH, content);
-  }
+  const identityDoc = process.env.OPENCLAW_IDENTITY_MD?.trim();
+  const agentDescription = process.env.OPENCLAW_AGENT_DESCRIPTION?.trim() || "";
+  const defaultIdentity = [
+    "# IDENTITY.md",
+    "",
+    `- Name: ${AGENT_NAME}`,
+    `- Agent ID: ${AGENT_ID}`,
+    ...(agentDescription ? [`- Role: ${agentDescription}`] : []),
+    "- Operating Style: direct, decisive, evidence-based",
+    "",
+  ].join("\n");
+  await writeTextFile(IDENTITY_PATH, identityDoc ? `${identityDoc}\n` : defaultIdentity);
 
   const existingAuthProfiles = normalizeObjectRecord(await parseConfigFile(AUTH_PROFILES_PATH));
   let nextAuthProfiles = existingAuthProfiles;

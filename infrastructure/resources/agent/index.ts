@@ -32,6 +32,9 @@ const readFileIfExists = (relativePath: string): string => {
   return fs.readFileSync(absolutePath, "utf8");
 };
 
+const readOptionalFileIfExists = (relativePath?: string): string =>
+  typeof relativePath === "string" && relativePath.trim() !== "" ? readFileIfExists(relativePath) : "";
+
 const generateContainerSecrets = (
   secret: secretsmanager.ISecret,
   directEnvKeys: string[] = [],
@@ -161,7 +164,12 @@ export class AgentFargateStack extends cdk.Stack {
       ],
     });
 
+    const agentsDoc = readOptionalFileIfExists(props.agent.openclaw.agentsPromptPath);
     const soulPrompt = readFileIfExists(props.agent.openclaw.soulPromptPath);
+    const toolsDoc = readOptionalFileIfExists(props.agent.openclaw.toolsPromptPath);
+    const identityDoc = readOptionalFileIfExists(props.agent.openclaw.identityPromptPath);
+    const userDoc = readOptionalFileIfExists(props.agent.openclaw.userPromptPath);
+    const heartbeatDoc = readOptionalFileIfExists(props.agent.openclaw.heartbeatPromptPath);
     const openclawJson = JSON.stringify({
       id: props.agent.id,
       displayName: props.agent.displayName,
@@ -192,6 +200,7 @@ export class AgentFargateStack extends cdk.Stack {
       environment: {
         OPENCLAW_AGENT_ID: props.agent.id,
         OPENCLAW_AGENT_NAME: props.agent.displayName,
+        OPENCLAW_AGENT_DESCRIPTION: props.agent.description,
         OPENCLAW_MODEL_PROVIDER: props.agent.model.provider,
         OPENCLAW_MODEL: props.agent.model.model,
         OPENCLAW_STATE_DIR: "/home/node/.openclaw",
@@ -201,7 +210,12 @@ export class AgentFargateStack extends cdk.Stack {
         // ECS runs immutable images; disable in-container self-update checks by default.
         OPENCLAW_AUTO_UPDATE: "false",
         OPENCLAW_UPDATE_CHANNEL: "stable",
+        OPENCLAW_AGENTS_MD: agentsDoc,
         OPENCLAW_SOUL_MD: soulPrompt,
+        OPENCLAW_TOOLS_MD: toolsDoc,
+        OPENCLAW_IDENTITY_MD: identityDoc,
+        OPENCLAW_USER_MD: userDoc,
+        OPENCLAW_HEARTBEAT_MD: heartbeatDoc,
         OPENCLAW_JSON: openclawJson,
         OPENCLAW_AUTH_PROFILES_JSON: authProfiles,
         OPENCLAW_ALLOW_TOOLS: props.agent.openclaw.allowTools.join(","),

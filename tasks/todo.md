@@ -371,3 +371,163 @@
   - Synth output for `OPENCLAW_JSON` includes:
     - `"tools":{"elevated":{"enabled":true,"allowFrom":{"slack":["*"]}},"exec":{"host":"gateway","security":"full","ask":"off"}}`
     - `"agents":{"defaults":{"elevatedDefault":"full", ...}}`
+
+## 2026-03-17 Soul Hardening (Ownership, Handoffs, Feedback Discipline)
+
+- [x] Review all active agent soul prompts and identify shared workflow failures.
+- [x] Add standardized operating rules for task ownership, feedback cadence, environment discovery, and blocker escalation.
+- [x] Strengthen implementation-agent handoff requirements so completion always includes status change, branch/PR reference, and reassignment to QA.
+- [x] Strengthen QA fail-fast behavior so blocked or missing-evidence reviews are reassigned quickly with explicit blocker evidence.
+- [x] Strengthen architect/product prompts to enforce decisive routing, scope clarity, and no silent stalls.
+- [x] Verify updated soul prompts for consistency and document the resulting operating model.
+
+### Review
+
+- Updated active soul prompts:
+  - `infrastructure/agent-assets/agents/architect-agent.md`
+  - `infrastructure/agent-assets/agents/senior-fullstack-agent.md`
+  - `infrastructure/agent-assets/agents/codex-agent.md`
+  - `infrastructure/agent-assets/agents/qa-automation-agent.md`
+  - `infrastructure/agent-assets/agents/product-agent.md`
+- Added standardized hard rules across roles:
+  - first 20 minutes must produce a concrete artifact or explicit blocker
+  - no repeated re-check/retry loops without new evidence
+  - environment blockers must be verified with real commands and attempted remediation
+  - memory/journal updates do not count as completion or handoff
+- Implementation agents now explicitly require:
+  - branch as source of truth when Linear defines it
+  - branch push + Linear update before QA handoff
+  - `Needs Review` + assign `qa-agent@mostrom.io` as mandatory completion actions
+- QA now explicitly requires:
+  - Linear issue as source of truth for branch/commit/PR/`main`
+  - PR is optional when issue already defines what to validate
+  - fail-fast reassignment out of `In Review` when implementation evidence is missing or stale
+  - reassignment back to the responsible implementation owner, not open-ended waiting
+- Architect/Product now explicitly require:
+  - decisive routing instead of open-ended analysis
+  - explicit next owner + next status before handoff is considered complete
+- Consistency verification:
+  - checked updated sections across all five souls
+  - removed the remaining implementation wording that implied QA handoff only happens after PR creation
+
+## 2026-03-17 Bootstrap Split + Session Pruning
+
+- [x] Verify OpenClaw docs for session pruning, memory, heartbeat cadence, and workspace bootstrap file injection.
+- [x] Set shared agent context pruning to `cache-ttl` with `ttl: "1h"`.
+- [x] Keep memory enabled and ensure agent workspace guidance uses memory files correctly.
+- [x] Extend hosted-agent bootstrap to materialize shared `AGENTS.md`, `TOOLS.md`, `USER.md`, `HEARTBEAT.md`, and `IDENTITY.md`.
+- [x] Move common operating rules out of role souls into shared workspace files and trim the souls accordingly.
+- [x] Verify infrastructure type-checks and generated task definition env/config include the new bootstrap payloads, memory settings, heartbeat cadence, and pruning settings.
+
+### Review
+
+- Docs used:
+  - `openclaw/docs/concepts/session-pruning.md`
+  - `openclaw/docs/concepts/memory.md`
+  - `openclaw/docs/concepts/system-prompt.md`
+  - `openclaw/docs/gateway/heartbeat.md`
+  - `openclaw/docs/gateway/configuration-reference.md`
+- Infrastructure changes:
+  - `infrastructure/properties/index.ts`
+    - kept `agents.defaults.memorySearch` enabled with Gemini embeddings
+    - set `agents.defaults.contextPruning = { mode: "cache-ttl", ttl: "1h" }`
+    - set `agents.defaults.heartbeat = { every: "1h" }`
+    - added `identityPromptPath` to shared managed-agent bootstrap docs
+  - `infrastructure/resources/agent/index.ts`
+    - now reads and injects `OPENCLAW_IDENTITY_MD` alongside `AGENTS`, `SOUL`, `TOOLS`, `USER`, and `HEARTBEAT`
+  - `infrastructure/docker/openclaw-bootstrap.mjs`
+    - already supported writing `IDENTITY.md`; now receives source-controlled content from infra env instead of only generated fallback
+- Added shared workspace bootstrap docs:
+  - `infrastructure/agent-assets/workspace/AGENTS.md`
+  - `infrastructure/agent-assets/workspace/TOOLS.md`
+  - `infrastructure/agent-assets/workspace/IDENTITY.md`
+  - `infrastructure/agent-assets/workspace/USER.md`
+  - `infrastructure/agent-assets/workspace/HEARTBEAT.md`
+- Prompt split result:
+  - `AGENTS.md` now owns shared execution rules: planning, verification, task tracking, handoff discipline, continuity, and delegation constraints
+  - `TOOLS.md` now owns environment-reality and remediation rules
+  - `IDENTITY.md` now owns shared agent identity and operating style
+  - role `SOUL.md` files were trimmed to role-specific mission, routing, and completion rules
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && npx ts-node --transpile-only -e 'const { project } = require("./properties"); ...'`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
+  - Synth output confirms env injection for:
+    - `OPENCLAW_AGENTS_MD`
+    - `OPENCLAW_SOUL_MD`
+    - `OPENCLAW_TOOLS_MD`
+    - `OPENCLAW_IDENTITY_MD`
+    - `OPENCLAW_USER_MD`
+    - `OPENCLAW_HEARTBEAT_MD`
+  - Synth output confirms `OPENCLAW_JSON` contains:
+    - `"memorySearch":{"enabled":true,"provider":"gemini","model":"gemini-embedding-001"}`
+    - `"heartbeat":{"every":"1h"}`
+    - `"contextPruning":{"mode":"cache-ttl","ttl":"1h"}`
+
+## 2026-03-17 Per-Agent Bootstrap Layout + Soul Folder
+
+- [x] Replace the single shared workspace bootstrap bundle with shared plus per-agent prompt files.
+- [x] Move loose soul markdown files into an explicit `agent-assets/agents/souls/` directory.
+- [x] Give each agent its own `TOOLS.md`, `IDENTITY.md`, `USER.md`, and `HEARTBEAT.md` content.
+- [x] Keep only truly global rules in shared prompt files and update agent config paths accordingly.
+- [x] Verify infrastructure type-checks and synthesized env/config reflect the new per-agent paths.
+
+### Review
+
+- Layout changes:
+  - moved shared workflow prompt to `infrastructure/agent-assets/shared/AGENTS.md`
+  - moved role souls into `infrastructure/agent-assets/agents/souls/`
+  - created per-agent prompt folders:
+    - `infrastructure/agent-assets/agents/architect-agent/`
+    - `infrastructure/agent-assets/agents/fullstack-agent/`
+    - `infrastructure/agent-assets/agents/codex-agent/`
+    - `infrastructure/agent-assets/agents/qa-agent/`
+    - `infrastructure/agent-assets/agents/pm-agent/`
+- Each agent now has its own:
+  - `TOOLS.md`
+  - `IDENTITY.md`
+  - `USER.md`
+  - `HEARTBEAT.md`
+- Infrastructure path changes:
+  - `infrastructure/properties/index.ts`
+    - shared `AGENTS.md` now points to `agent-assets/shared/AGENTS.md`
+    - added `agentPromptPaths(agentId)` helper for per-agent bootstrap docs
+    - souls now resolve from `agent-assets/agents/souls/<agent-id>.md`
+- Removed obsolete shared prompt files from `infrastructure/agent-assets/workspace/`.
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && npx ts-node --transpile-only -e 'const { project } = require("./properties"); ...'`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
+  - Verified resolved prompt paths for all agents point to:
+    - shared `AGENTS.md`
+    - per-agent `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`
+    - `agents/souls/<agent-id>.md`
+  - Synth output confirmed runtime env injection uses the new fullstack-specific `TOOLS.md`, `IDENTITY.md`, `USER.md`, and `HEARTBEAT.md` content.
+
+## 2026-03-18 Agent Asset Path Sync
+
+- [x] Verify the current on-disk `agent-assets` layout after the manual reorganization.
+- [x] Update stack prompt-path references so they match the per-agent `SOUL.md` files.
+- [x] Update infra script and README references for moved `manifests/` and `credentials/` directories.
+- [x] Verify type-checks and synth still succeed with the new folder references.
+
+### Review
+
+- Verified current layout:
+  - per-agent prompts live under `infrastructure/agent-assets/agents/<agent-id>/`
+  - each agent directory now contains `SOUL.md`
+  - `manifests/` now lives at `infrastructure/agent-assets/manifests/`
+  - `credentials/` now lives at `infrastructure/agent-assets/credentials/`
+- Updated references:
+  - `infrastructure/properties/index.ts`
+    - `soulPromptPath` now resolves to `agent-assets/agents/<agent-id>/SOUL.md`
+  - `infrastructure/scripts/slack/sync-agent-manifests.sh`
+    - defaults now point to `agent-assets/manifests` and `agent-assets/credentials`
+  - `infrastructure/README.md`
+    - docs now point to the reorganized paths
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `cd infrastructure && npx ts-node --transpile-only -e 'const { project } = require("./properties"); ...'`
+  - `cd infrastructure && AWS_PROFILE=mostrom_mgmt npm run cdk -- synth "OpenclawStack/openclaw-cdk/openclaw-fullstack-agent-cdk"`
+  - Verified resolved soul paths now point to `agent-assets/agents/<agent-id>/SOUL.md`
+  - Synth output confirmed the stack still injects the per-agent `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, and `HEARTBEAT.md` payloads

@@ -23,3 +23,11 @@
 - When rotating/injecting `OPENCLAW_GATEWAY_TOKEN`, also reconcile persisted `gateway.auth.token` in agent state config; env/config drift can break localhost gateway-client auth (`token_mismatch`) and block subagent spawning.
 - `build-push-openclaw-image.sh` only handles image/deployment rollout; secret value changes must go through `scripts/secrets/push-agent-secrets.sh`, and that script should fail fast on missing required keys to prevent ECS secret-injection startup failures.
 - When a permissions request is ambiguous, resolve whether the user means availability gating, default elevated state, or actual exec security/approval behavior before patching; "full permissions" requires all three to line up.
+- For QA, treat the Linear issue as the source of truth for the validation artifact; if it names a branch or `main`, do not block waiting for a PR.
+- A memory/journal update is not a workflow handoff; completion requires the actual system-of-record mutations (branch reference, status change, and assignee change).
+- Never allow agents to cite missing tools, browsers, runtimes, or env access without first verifying the environment and attempting permitted installation/remediation.
+- When splitting agent behavior across bootstrap files, put platform-wide execution rules in `AGENTS.md` and `TOOLS.md`, keep `SOUL.md` role-specific, and remember subagents only inherit `AGENTS.md` plus `TOOLS.md`.
+- When enabling Anthropic `cache-ttl` pruning, pair it with the documented heartbeat cadence (`agents.defaults.heartbeat.every = "1h"`) instead of only setting pruning TTL.
+- If role behavior differs materially by agent, do not hide it in one shared bootstrap directory; use per-agent prompt folders keyed by agent ID and keep only truly global rules shared.
+- Keep soul prompts in an explicit `agents/souls/` directory so their purpose is obvious and path wiring stays distinct from per-agent bootstrap docs.
+- If asset folders are reorganized manually, re-scan the actual on-disk layout first and update stack paths, helper scripts, and docs together in one pass.

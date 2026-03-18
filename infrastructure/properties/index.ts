@@ -25,7 +25,12 @@ export interface AgentSecretsConfig {
 }
 
 export interface AgentOpenclawConfig {
+  agentsPromptPath?: string;
   soulPromptPath: string;
+  toolsPromptPath?: string;
+  identityPromptPath?: string;
+  userPromptPath?: string;
+  heartbeatPromptPath?: string;
   allowTools: string[];
   denyTools: string[];
   configOverrides?: Record<string, unknown>;
@@ -104,6 +109,18 @@ const hostedBrowserOverrides = {
   },
 } as const;
 
+const sharedPromptDocs = {
+  agentsPromptPath: "agent-assets/shared/AGENTS.md",
+} as const;
+
+const agentPromptPaths = (agentId: string) => ({
+  toolsPromptPath: `agent-assets/agents/${agentId}/TOOLS.md`,
+  identityPromptPath: `agent-assets/agents/${agentId}/IDENTITY.md`,
+  userPromptPath: `agent-assets/agents/${agentId}/USER.md`,
+  heartbeatPromptPath: `agent-assets/agents/${agentId}/HEARTBEAT.md`,
+  soulPromptPath: `agent-assets/agents/${agentId}/SOUL.md`,
+});
+
 const defaultAgentDefaults = {
   compaction: {
     mode: "safeguard",
@@ -119,6 +136,13 @@ const defaultAgentDefaults = {
     enabled: true,
     provider: "gemini",
     model: "gemini-embedding-001",
+  },
+  heartbeat: {
+    every: "1h",
+  },
+  contextPruning: {
+    mode: "cache-ttl",
+    ttl: "1h",
   },
   elevatedDefault: "full",
   subagents: {
@@ -187,7 +211,8 @@ export const project: Project = {
         model: "claude-opus-4-5",
       },
       openclaw: {
-        soulPromptPath: "agent-assets/agents/architect-agent.md",
+        ...sharedPromptDocs,
+        ...agentPromptPaths("architect-agent"),
         allowTools: ["*"],
         denyTools: [],
         configOverrides: defaultOpenclawOverrides,
@@ -213,7 +238,8 @@ export const project: Project = {
         model: "claude-opus-4-5",
       },
       openclaw: {
-        soulPromptPath: "agent-assets/agents/senior-fullstack-agent.md",
+        ...sharedPromptDocs,
+        ...agentPromptPaths("fullstack-agent"),
         allowTools: ["*"],
         denyTools: [],
         configOverrides: defaultOpenclawOverrides,
@@ -239,7 +265,8 @@ export const project: Project = {
         model: "gpt-5.3-codex",
       },
       openclaw: {
-        soulPromptPath: "agent-assets/agents/codex-agent.md",
+        ...sharedPromptDocs,
+        ...agentPromptPaths("codex-agent"),
         allowTools: ["*"],
         denyTools: [],
         configOverrides: defaultOpenclawOverrides,
@@ -265,7 +292,8 @@ export const project: Project = {
         model: "gpt-5.3-codex",
       },
       openclaw: {
-        soulPromptPath: "agent-assets/agents/qa-automation-agent.md",
+        ...sharedPromptDocs,
+        ...agentPromptPaths("qa-agent"),
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultOpenclawOverrides,
@@ -291,7 +319,8 @@ export const project: Project = {
         model: "claude-sonnet-4-5",
       },
       openclaw: {
-        soulPromptPath: "agent-assets/agents/product-agent.md",
+        ...sharedPromptDocs,
+        ...agentPromptPaths("pm-agent"),
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
         configOverrides: defaultOpenclawOverrides,
