@@ -17,6 +17,8 @@ const resolveStateDir = () => {
 const STATE_DIR = resolveStateDir();
 const WORKSPACE_DIR = process.env.OPENCLAW_WORKSPACE_DIR?.trim() || path.join(STATE_DIR, "workspace");
 const CONFIG_PATH = process.env.OPENCLAW_CONFIG_PATH?.trim() || path.join(STATE_DIR, "openclaw.json");
+const CRON_STORE_PATH =
+  process.env.OPENCLAW_CRON_STORE_PATH?.trim() || path.join(STATE_DIR, "cron", "jobs.json");
 const AGENT_ID = (process.env.OPENCLAW_AGENT_ID?.trim() || "main").replaceAll("/", "-");
 const AGENT_NAME = process.env.OPENCLAW_AGENT_NAME?.trim() || AGENT_ID;
 const AGENT_DIR =
@@ -69,6 +71,19 @@ const parseConfigFile = async (filePath) => {
       return {};
     }
     return {};
+  }
+};
+
+const parseJsonFileStrict = async (filePath, missingFallback) => {
+  try {
+    const raw = await fs.readFile(filePath, "utf8");
+    return JSON.parse(raw);
+  } catch (error) {
+    const code = error && typeof error === "object" ? error.code : "";
+    if (code === "ENOENT") {
+      return missingFallback;
+    }
+    throw error;
   }
 };
 
@@ -196,6 +211,103 @@ const writeWorkspaceDocFromEnv = async (envName, filePath) => {
   await writeTextFile(filePath, content);
 };
 
+const loadCronStore = async (filePath) => {
+  const parsed = await parseJsonFileStrict(filePath, { version: 1, jobs: [] });
+  const parsedRecord = isObjectRecord(parsed) ? parsed : {};
+  return {
+    version: 1,
+    jobs: Array.isArray(parsedRecord.jobs) ? parsedRecord.jobs.filter(isObjectRecord) : [],
+  };
+};
+
+const normalizeCronJob = (value) => {
+  if (!isObjectRecord(value)) {
+    return null;
+  }
+  const id = String(value.id ?? "").trim();
+  const name = String(value.name ?? "").trim();
+  if (!id || !name) {
+    throw new Error("bootstrap.cronJobs entries require non-empty id and name");
+  }
+  return {
+    ...value,
+    id,
+    name,
+  };
+};
+
+const stripVolatileCronState = (value) => {
+  const state = normalizeObjectRecord(value);
+  delete state.nextRunAtMs;
+  delete state.runningAtMs;
+  return state;
+};
+
+const buildManagedCronJob = (params) => {
+  const { desired, previous, defaultAgentId, nowMs } = params;
+  const previousRecord = isObjectRecord(previous) ? previous : {};
+  const desiredRecord = isObjectRecord(desired) ? desired : {};
+  const mergedState = stripVolatileCronState(
+    deepMerge(normalizeObjectRecord(previousRecord.state), normalizeObjectRecord(desiredRecord.state)),
+  );
+  const nextAgentId = String(
+    desiredRecord.agentId ?? previousRecord.agentId ?? defaultAgentId ?? "",
+  ).trim();
+
+  return {
+    ...previousRecord,
+    ...desiredRecord,
+    agentId: nextAgentId || undefined,
+    enabled: desiredRecord.enabled ?? previousRecord.enabled ?? true,
+    deleteAfterRun: desiredRecord.deleteAfterRun ?? previousRecord.deleteAfterRun ?? false,
+    createdAtMs:
+      typeof previousRecord.createdAtMs === "number" ? previousRecord.createdAtMs : nowMs,
+    updatedAtMs: nowMs,
+    state: mergedState,
+  };
+};
+
+const reconcileBootstrapCronJobs = async (params) => {
+  const { desiredJobs, storePath, defaultAgentId } = params;
+  if (!Array.isArray(desiredJobs) || desiredJobs.length === 0) {
+    return [];
+  }
+
+  const normalizedDesired = desiredJobs.map(normalizeCronJob).filter(Boolean);
+  const existingStore = await loadCronStore(storePath);
+  const nextJobs = [...existingStore.jobs];
+  const managedIds = [];
+  const nowMs = Date.now();
+
+  for (const desiredJob of normalizedDesired) {
+    managedIds.push(desiredJob.id);
+    const existingIndex = nextJobs.findIndex((job) => job?.id === desiredJob.id);
+    const previous = existingIndex >= 0 ? nextJobs[existingIndex] : undefined;
+    const nextJob = buildManagedCronJob({
+      desired: desiredJob,
+      previous,
+      defaultAgentId,
+      nowMs,
+    });
+    if (existingIndex >= 0) {
+      nextJobs[existingIndex] = nextJob;
+    } else {
+      nextJobs.push(nextJob);
+    }
+  }
+
+  const nextStore = {
+    version: 1,
+    jobs: nextJobs,
+  };
+
+  if (JSON.stringify(existingStore) !== JSON.stringify(nextStore)) {
+    await writeJsonFile(storePath, nextStore);
+  }
+
+  return managedIds;
+};
+
 const pruneLegacyInvalidConfigKeys = (config) => {
   if (!isObjectRecord(config)) {
     return [];
@@ -229,6 +341,11 @@ const pruneLegacyInvalidConfigKeys = (config) => {
     delete config.agents;
   }
 
+  if ("bootstrap" in config) {
+    delete config.bootstrap;
+    removed.push("bootstrap");
+  }
+
   return removed;
 };
 
@@ -238,10 +355,14 @@ const bootstrap = async () => {
     payload && typeof payload === "object" && !Array.isArray(payload) && payload.overrides
       ? payload.overrides
       : {};
+  const runtimeConfigOverrides = { ...normalizeObjectRecord(payloadOverrides) };
+  const bootstrapConfig = normalizeObjectRecord(runtimeConfigOverrides.bootstrap);
+  delete runtimeConfigOverrides.bootstrap;
   const payloadFragment = pickConfigFragment(payload);
   const authProfilesPayload = parseJsonEnv("OPENCLAW_AUTH_PROFILES_JSON", null);
   const authProfilesPatch = normalizeObjectRecord(authProfilesPayload);
   const hasAuthProfilesPatch = Object.keys(authProfilesPatch).length > 0;
+  const bootstrapCronJobs = Array.isArray(bootstrapConfig.cronJobs) ? bootstrapConfig.cronJobs : [];
   const anthropicSetupToken = process.env.ANTHROPIC_SETUP_TOKEN?.trim() || "";
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim() || "";
 
@@ -305,7 +426,7 @@ const bootstrap = async () => {
 
   const existingConfig = await parseConfigFile(CONFIG_PATH);
   const mergedConfig = deepMerge(
-    deepMerge(deepMerge(existingConfig, payloadFragment), payloadOverrides),
+    deepMerge(deepMerge(existingConfig, payloadFragment), runtimeConfigOverrides),
     desiredConfig,
   );
   const removedKeys = pruneLegacyInvalidConfigKeys(mergedConfig);
@@ -360,6 +481,15 @@ const bootstrap = async () => {
 
   if (hasAuthProfilesPatch || anthropicSetupToken) {
     await writeJsonFile(AUTH_PROFILES_PATH, nextAuthProfiles);
+  }
+
+  const managedCronJobIds = await reconcileBootstrapCronJobs({
+    desiredJobs: bootstrapCronJobs,
+    storePath: CRON_STORE_PATH,
+    defaultAgentId: AGENT_ID,
+  });
+  if (managedCronJobIds.length > 0) {
+    console.log(`[bootstrap] Cron jobs reconciled: ${managedCronJobIds.join(", ")}`);
   }
 
   console.log(

@@ -88,6 +88,7 @@ If scopes change, reinstall each Slack app.
 - `SLACK_APP_TOKEN`
 - `LINEAR_API_KEY`
 - `NOTION_API_KEY`
+- `CONTEXT7_API_KEY`
 - `GMAIL_EMAIL`
 - `GMAIL_PASSWORD`
 - provider key (`OPENAI_API_KEY` or `ANTHROPIC_SETUP_TOKEN`)
@@ -149,22 +150,30 @@ The wrapped image pre-installs:
 - `lin` (Linear CLI)
 - `jq`, `yq`, `rg`, `fd`
 - `curl`, `wget`, `unzip`, `zip`, `tar`
+- `ctx7`, `context7-mcp`
+- `dembrandt`
 - `python3`, `pip`, `venv`, `poetry`
 - `make`, `build-essential`
 - `aws`, `sam`
 - `sqlite3`, `psql`, `mysql`, `redis-cli`
 - `dig`, `nc`, `lsof`, `ping`
 - `shellcheck`, `yamllint`, `pre-commit`
+- `chromium`
 
 Browser testing baseline:
 
 - Build script defaults `OPENCLAW_INSTALL_BROWSER=1`, which bakes Chromium + Playwright runtime deps into the base image.
 - Override with `OPENCLAW_INSTALL_BROWSER=0` only when you explicitly want a smaller image.
+- The wrapped agent image also installs a system `chromium` binary and the entrypoint fails fast if it is missing, so agents always have a browser on `PATH`.
+- The wrapped agent image also installs `dembrandt@0.6.1` and preloads its Playwright Chromium/Firefox browsers during image build so agents do not need a first-run browser download.
 
 Skills baseline:
 
 - All skills in [agent-assets/skills](./agent-assets/skills) are baked into the image at `/opt/openclaw/skills`.
 - Agents load these automatically via `skills.load.extraDirs` in `properties/index.ts`.
+- Shared skill set now includes:
+  - Context7 documentation lookup (`context7-cli`, `find-docs`)
+  - Impeccable design skill pack (`frontend-design` plus design steering commands)
 
 Plugin baseline:
 
@@ -191,7 +200,7 @@ Use that URL as the webhook target in Linear and set the same webhook secret val
 - Agents respond in Slack channels/DMs.
 - Dispatcher bot can post into target Slack channel.
 - Linear issue assignment triggers a Slack mention.
-- Linear comment by non-assignee on an assigned issue triggers a Slack mention.
+- Linear comment events do not dispatch to Slack; assigned agents must read Linear issue comments directly before starting and before closeout.
 - `GITHUB_TOKEN` works (`curl https://api.github.com/user` returns `200`).
 
 ## Codex OAuth Setup (Any Agent)

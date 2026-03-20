@@ -148,12 +148,6 @@ def _is_issue_assignment_event(payload: Dict[str, Any]) -> bool:
     return bool(assignee_id)
 
 
-def _is_comment_event(payload: Dict[str, Any]) -> bool:
-    event_type = str(payload.get("type") or "").lower()
-    action = str(payload.get("action") or "").lower()
-    return event_type == "comment" and action == "create"
-
-
 def _resolve_slack_target_from_issue(issue_data: Dict[str, Any], config: Dict[str, Any]) -> Tuple[str, str]:
     if not isinstance(issue_data, dict):
         return "", "no_data"
@@ -181,18 +175,6 @@ def _resolve_slack_target_from_issue(issue_data: Dict[str, Any], config: Dict[st
     return "", "no_route"
 
 
-def _extract_assignee_id(issue_data: Dict[str, Any]) -> str:
-    if not isinstance(issue_data, dict):
-        return ""
-    direct = str(issue_data.get("assigneeId") or "").strip()
-    if direct:
-        return direct
-    assignee = issue_data.get("assignee") or {}
-    if isinstance(assignee, dict):
-        return str(assignee.get("id") or "").strip()
-    return ""
-
-
 def _issue_line(issue_data: Dict[str, Any], fallback_url: str = "") -> str:
     identifier = str(issue_data.get("identifier") or "").strip()
     title = _slack_escape(str(issue_data.get("title") or "Untitled issue"))
@@ -214,22 +196,12 @@ def _slack_escape(value: str) -> str:
 
 def _build_assignment_message(payload: Dict[str, Any], issue_data: Dict[str, Any], slack_user_id: str) -> str:
     issue_line = _issue_line(issue_data, str(payload.get("url") or "").strip())
-    assignee_email = _extract_assignee_email(issue_data)
 
     lines = [
         f"Hey <@{slack_user_id}> a new issue has been assigned to you.",
         f"*Issue:* {issue_line}",
     ]
-    if assignee_email:
-        lines.append(f"*Assigned Identity:* `{_slack_escape(assignee_email)}`")
     return "\n".join(lines)
-
-
-def _truncate_single_line(text: str, max_chars: int = 240) -> str:
-    one_line = " ".join(text.split())
-    if len(one_line) <= max_chars:
-        return one_line
-    return one_line[: max_chars - 3].rstrip() + "..."
 
 
 def _linear_graphql(config: Dict[str, Any], query: str, variables: Dict[str, Any]) -> Dict[str, Any]:
@@ -302,74 +274,6 @@ def _merge_issue_data(base: Dict[str, Any], enriched: Dict[str, Any]) -> Dict[st
             merged["assigneeId"] = assignee_id
 
     return merged
-
-
-def _extract_commenter(data: Dict[str, Any], payload: Dict[str, Any]) -> Tuple[str, str]:
-    direct_user_id = str(data.get("userId") or data.get("creatorId") or data.get("actorId") or "").strip()
-
-    user_data = data.get("user") if isinstance(data.get("user"), dict) else {}
-    actor_data = payload.get("actor") if isinstance(payload.get("actor"), dict) else {}
-
-    nested_user_id = str(user_data.get("id") or actor_data.get("id") or "").strip()
-    commenter_id = direct_user_id or nested_user_id
-
-    display_name = str(user_data.get("name") or user_data.get("displayName") or "").strip()
-    if not display_name:
-        display_name = str(user_data.get("email") or "").strip()
-    if not display_name:
-        display_name = str(actor_data.get("name") or actor_data.get("displayName") or actor_data.get("email") or "").strip()
-    if not display_name:
-        display_name = commenter_id or "Unknown user"
-
-    return commenter_id, display_name
-
-
-def _extract_comment_issue(payload: Dict[str, Any], config: Dict[str, Any]) -> Tuple[Dict[str, Any], str, str, str, str]:
-    data = payload.get("data") or {}
-    if not isinstance(data, dict):
-        return {}, "", "", "", ""
-
-    issue_data = data.get("issue") if isinstance(data.get("issue"), dict) else {}
-    issue_id = str(data.get("issueId") or issue_data.get("id") or "").strip()
-
-    if issue_id:
-        try:
-            enriched_issue = _fetch_issue_from_linear(config, issue_id)
-            issue_data = _merge_issue_data(issue_data, enriched_issue)
-            if not issue_data.get("id"):
-                issue_data["id"] = issue_id
-        except Exception as error:  # noqa: BLE001
-            LOGGER.warning("Failed to enrich comment issue '%s' from Linear API: %s", issue_id, error)
-
-    commenter_id, commenter_display = _extract_commenter(data, payload)
-    comment_body = str(data.get("body") or "").strip()
-    comment_url = str(data.get("url") or payload.get("url") or "").strip()
-    return issue_data, commenter_id, commenter_display, comment_body, comment_url
-
-
-def _build_comment_message(
-    payload: Dict[str, Any],
-    issue_data: Dict[str, Any],
-    slack_user_id: str,
-    commenter_display: str,
-    comment_body: str,
-    comment_url: str,
-) -> str:
-    issue_line = _issue_line(issue_data, str(payload.get("url") or "").strip())
-
-    lines = [
-        f"<@{slack_user_id}> New comment on your assigned Linear issue",
-        f"*Issue:* {issue_line}",
-        f"*Comment by:* `{_slack_escape(commenter_display)}`",
-    ]
-
-    if comment_body:
-        preview = _slack_escape(_truncate_single_line(comment_body))
-        lines.append(f"*Comment:* {preview}")
-    if comment_url:
-        lines.append(f"*Comment Link:* <{comment_url}|Open in Linear>")
-
-    return "\n".join(lines)
 
 
 def _post_to_slack(bot_token: str, channel_id: str, text: str) -> None:
@@ -460,46 +364,6 @@ def lambda_handler(event: Dict[str, Any], _context: Any) -> Dict[str, Any]:
 
         LOGGER.info("Issue event dispatched to Slack: route=%s type=%s action=%s", route_reason, event_type, action)
         return _response(200, {"ok": True, "notified": True, "route": route_reason, "kind": "issue_assignment"})
-
-    if _is_comment_event(payload):
-        issue_data, commenter_id, commenter_display, comment_body, comment_url = _extract_comment_issue(payload, config)
-        if not issue_data:
-            LOGGER.info("Comment event skipped: reason=%s type=%s action=%s", "missing_issue_context", event_type, action)
-            return _response(200, {"ok": True, "notified": False, "reason": "missing_issue_context"})
-
-        assignee_id = _extract_assignee_id(issue_data)
-        if assignee_id and commenter_id and assignee_id == commenter_id:
-            LOGGER.info("Comment event skipped: reason=%s type=%s action=%s", "self_comment", event_type, action)
-            return _response(200, {"ok": True, "notified": False, "reason": "self_comment"})
-
-        slack_user_id, route_reason = _resolve_slack_target_from_issue(issue_data, config)
-        if not slack_user_id:
-            LOGGER.info(
-                "Comment event not routed: reason=%s type=%s action=%s assigneeId=%s commenterId=%s",
-                "no_matching_route",
-                event_type,
-                action,
-                assignee_id,
-                commenter_id,
-            )
-            return _response(200, {"ok": True, "notified": False, "reason": "no_matching_route"})
-
-        try:
-            text = _build_comment_message(
-                payload,
-                issue_data,
-                slack_user_id,
-                commenter_display,
-                comment_body,
-                comment_url,
-            )
-            _post_to_slack(config["SLACK_BOT_TOKEN"], config["SLACK_CHANNEL_ID"], text)
-        except Exception as error:  # noqa: BLE001
-            LOGGER.exception("Failed to send Slack notification: %s", error)
-            return _response(500, {"ok": False, "error": "slack_dispatch_failed"})
-
-        LOGGER.info("Comment event dispatched to Slack: route=%s type=%s action=%s", route_reason, event_type, action)
-        return _response(200, {"ok": True, "notified": True, "route": route_reason, "kind": "issue_comment"})
 
     LOGGER.info("Webhook event ignored: type=%s action=%s", event_type, action)
     return _response(200, {"ok": True, "notified": False, "reason": "irrelevant_event"})

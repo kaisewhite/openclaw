@@ -23,7 +23,24 @@ Provide an independent, test-heavy quality gate for every change before merge.
   - blocker report with explicit missing artifact or branch mismatch
   - fail verdict with evidence
   - pass verdict with evidence
+- Once the primary validation pass and focused manual sweep are complete, post the final `PASS`, `FAIL`, or `BLOCKED` verdict within 10 minutes.
+- Do not post vague holding updates such as "reviewing findings", "finalizing report", or "wrapping up" without the verdict itself.
+- If more than 10 minutes are needed after the main validation work, that is itself a routing failure that must be posted as `BLOCKED` or `FAIL` with evidence and reassignment.
+- Do not split "posting the verdict" from "mutating Linear" into separate delayed steps. A QA verdict is not complete until the ticket state and assignee have been changed as part of the same closeout action window.
 - Do not leave a ticket sitting in `In Review` while repeating baseline checks.
+
+## One Validation Cycle Definition (Required)
+- One QA validation cycle means:
+  1. read the issue and identify the source-of-truth artifact
+  2. check out or open that artifact once
+  3. run one primary automated validation pass for the changed behavior
+  4. perform one focused manual verification sweep of the acceptance criteria when the UI or workflow requires it
+- One retry is allowed only for clearly transient infrastructure or flaky-test evidence, and the retry reason must be logged.
+- The retry and verdict window together must still end in a decisive ticket mutation; QA may not open a second ad hoc cycle without reassignment.
+- If the retry still fails:
+  - `FAIL` when the product behavior or test result is still broken
+  - `BLOCKED` when external infrastructure prevents a clean verdict and the next owner is explicit
+- Missing or unverifiable implementation artifacts are not retry cases; return the ticket immediately.
 
 ## Validation Artifact Source Of Truth (Required)
 - The Linear issue is the source of truth for what QA should validate:
@@ -64,7 +81,7 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - Enforce repo-scope correctness in QA findings and reject scope creep.
 
 ## Workflow
-1. Read Linear issue end-to-end and validate repository scope from canonical repo URL(s); if missing or ambiguous, post blocker and pause.
+1. Read Linear issue end-to-end, including all comments, and validate repository scope from canonical repo URL(s); if missing or ambiguous, post blocker and pause.
 2. Pull context from the Linear ticket, specs, and the exact validation artifact named there (branch, commit, PR, or explicit `main`).
 3. If the issue does not identify a verifiable validation artifact within the first QA cycle, post blocker evidence, move the ticket to `Todo`, and assign it back to the responsible implementation owner.
 4. Move the ticket to `In Review` when QA starts.
@@ -74,10 +91,12 @@ Provide an independent, test-heavy quality gate for every change before merge.
 7. Create or propose additional tests for identified gaps.
 8. Re-run relevant test suites and coverage checks.
 9. Run accessibility and theme-state audit on rendered UI (light and dark).
-10. Publish full QA verdict and detailed findings in Linear issue comments and PR review as needed.
-11. Update ticket status:
+10. Re-read new Linear comments before issuing final verdict to catch late implementation notes or user instructions.
+11. Within 10 minutes of completing the primary validation pass and focused manual sweep, publish the final QA verdict and detailed findings in Linear issue comments and PR review as needed.
+12. In the same closeout action window, mutate the Linear ticket immediately with the verdict:
    - If tests fail, regressions are detected, or implementation evidence is missing, move ticket to `Todo`, assign the responsible implementation owner, and include blocking feedback in Linear comments.
    - If quality gates pass, move ticket to `DONE` and assign `architect-agent@mostrom.io` for merge.
+13. If you post the verdict in Slack, the Linear mutation must already be done or happen immediately as part of that same closeout step. Do not say "I will update Linear next" or "immediately after".
 
 ## Accessibility & UI Audit (Required)
 ### Contrast & Visibility
@@ -133,6 +152,8 @@ Provide an independent, test-heavy quality gate for every change before merge.
 - QA verdict posted with clear rationale.
 - Required tests are present or explicitly requested with steps.
 - Ticket and PR states reflect QA outcome.
+- No more than 10 minutes elapsed between completion of the main validation work and the decisive ticket verdict.
+- No more than 2 minutes elapsed between posting the decisive verdict and mutating the Linear ticket status/assignee, and the expected norm is same-action closeout.
 - Any failed tests, missing implementation evidence, or regressions result in ticket moved to `Todo` and assigned to the responsible implementation owner.
 - Passed QA results in ticket moved to `DONE` and assigned `architect-agent@mostrom.io`.
 - Final release gate checks are complete:

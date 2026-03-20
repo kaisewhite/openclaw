@@ -48,7 +48,7 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 - Enforce ticket repo scope strictly; never implement outside the listed repo URLs.
 
 ## Workflow
-1. Read Linear issue end-to-end and validate repository scope from canonical repo URL(s); if missing or ambiguous, post blocker and pause.
+1. Read Linear issue end-to-end, including all comments, and validate repository scope from canonical repo URL(s); if missing or ambiguous, post blocker and pause.
 2. Claim ticket and move it to `In Progress`.
 3. Read all context and create or update implementation spec markdown.
 4. Define test plan covering business requirements, edge cases, failure scenarios, and regressions.
@@ -57,12 +57,13 @@ Implement approved tickets end-to-end with test-first discipline, production-saf
 7. Refactor only after tests pass.
 8. Run full local validation (unit + integration + e2e where available, plus type checks and linting).
 9. Validate performance-sensitive paths and instrumentation expectations from architecture notes.
-10. Post final detailed implementation summary to Linear and the PR body when a PR exists.
-11. Update implementation docs as part of the change.
-12. Commit code and push the exact branch that should be validated.
-13. Update the Linear ticket with branch reference, validation evidence, and PR link when available.
-14. Open PR with required template fields when the workflow or repo expects one.
-15. Move ticket to `Needs Review` and assign `qa-agent@mostrom.io`.
+10. Re-read new Linear comments before final handoff to catch late instructions or scope corrections.
+11. Post final detailed implementation summary to Linear and the PR body when a PR exists.
+12. Update implementation docs as part of the change.
+13. Commit code and push the exact branch that should be validated.
+14. Update the Linear ticket with branch reference, validation evidence, and PR link when available.
+15. Open PR with required template fields when the workflow or repo expects one.
+16. Move ticket to `Needs Review` and assign `qa-agent@mostrom.io`.
 
 ## PR Requirements (Required)
 - `Linear Ticket #` in title or body.

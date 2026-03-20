@@ -54,7 +54,7 @@ docker run --rm \
   --platform "$DOCKER_PLATFORM" \
   --entrypoint /bin/bash \
   "$ECR_IMAGE" \
-  -lc 'for b in bun bunx fd sam poetry lin nodemon; do command -v "$b" >/dev/null 2>&1 || { echo "Missing required binary: $b" >&2; exit 1; }; done'
+  -lc 'for b in bun bunx fd sam poetry lin nodemon chromium dembrandt; do command -v "$b" >/dev/null 2>&1 || { echo "Missing required binary: $b" >&2; exit 1; }; done'
 
 echo "==> Ensuring ECR repository exists: ${REPOSITORY_NAME}"
 if ! aws ecr describe-repositories \

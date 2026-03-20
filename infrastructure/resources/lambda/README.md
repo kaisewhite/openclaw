@@ -1,7 +1,7 @@
 # Linear -> Slack Dispatcher Lambda
 
 ## Purpose
-Receives Linear webhook events and posts Slack notifications tagging the mapped agent account.
+Receives Linear webhook events and posts Slack assignment notifications tagging the mapped agent account.
 
 This is intended for task routing patterns like:
 - PM Agent creates task
@@ -33,11 +33,9 @@ Optional secret keys:
 - Processes Issue assignment events for:
   - `action=create` with `assigneeId`
   - `action=update` where `updatedFrom.assigneeId` changed and `assigneeId` is set
-- Processes Comment creation events for assigned issues:
-  - fetches issue context from Linear GraphQL
-  - routes to mapped assignee
-  - suppresses notification when commenter is the current assignee
 - Resolves Slack mention target by assignee ID/email mapping.
+- Ignores Linear comment events; assigned agents must read Linear comments directly before starting work.
+- Slack assignment posts mention the mapped Slack target and the issue only; they do not echo Linear assignee email identities into channel messages.
 
 Secret format note:
 - Keep Secrets Manager values flat key/value strings.

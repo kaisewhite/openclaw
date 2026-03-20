@@ -3,11 +3,14 @@ FROM ${BASE_IMAGE}
 
 USER root
 
-ARG OPENCLAW_AGENT_APT_PACKAGES="ca-certificates curl wget git git-lfs gh jq yq ripgrep fd-find unzip zip tar less procps psmisc tree rsync openssh-client python3 python3-pip python3-venv python3-poetry pipx make build-essential awscli shellcheck yamllint pre-commit sqlite3 postgresql-client default-mysql-client redis-tools dnsutils netcat-openbsd lsof iputils-ping"
+ARG DEMBRANDT_VERSION=0.6.1
+ARG OPENCLAW_AGENT_APT_PACKAGES="ca-certificates curl wget git git-lfs gh jq yq ripgrep fd-find unzip zip tar less procps psmisc tree rsync openssh-client python3 python3-pip python3-venv python3-poetry pipx make build-essential awscli shellcheck yamllint pre-commit sqlite3 postgresql-client default-mysql-client redis-tools dnsutils netcat-openbsd lsof iputils-ping chromium"
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ${OPENCLAW_AGENT_APT_PACKAGES} && \
-    npm install -g @linear/cli@0.0.5 nodemon@3 && \
+    npm install -g @linear/cli@0.0.5 nodemon@3 ctx7@0.3.6 @upstash/context7-mcp@2.1.4 dembrandt@${DEMBRANDT_VERSION} && \
+    mkdir -p /home/node/.cache/ms-playwright && \
+    PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright npm --prefix "$(npm root -g)/dembrandt" run install-browser && \
     curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local/bun bash && \
     test -x /usr/local/bun/bin/bun && \
     ln -sf /usr/local/bun/bin/bun /usr/local/bin/bun && \
@@ -18,6 +21,7 @@ RUN apt-get update && \
     command -v sam >/dev/null 2>&1 && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && \
     if command -v fdfind >/dev/null 2>&1; then ln -sf "$(command -v fdfind)" /usr/local/bin/fd; fi && \
+    chown -R node:node /home/node/.cache/ms-playwright && \
     (git lfs install --system || true)
 
 COPY infrastructure/docker/openclaw-entrypoint.sh /usr/local/bin/openclaw-entrypoint.sh

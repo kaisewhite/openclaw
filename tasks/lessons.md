@@ -31,3 +31,20 @@
 - If role behavior differs materially by agent, do not hide it in one shared bootstrap directory; use per-agent prompt folders keyed by agent ID and keep only truly global rules shared.
 - Keep soul prompts in an explicit `agents/souls/` directory so their purpose is obvious and path wiring stays distinct from per-agent bootstrap docs.
 - If asset folders are reorganized manually, re-scan the actual on-disk layout first and update stack paths, helper scripts, and docs together in one pass.
+- Do not mirror Linear comment events into the shared Slack coordination channel; keep dispatcher traffic assignment-only and require assigned agents to read Linear comments directly before execution and handoff.
+- When adding a new shared secret-backed capability, update both the agent secret payloads and `directEnvSharedKeys`; a secret value alone does not reach ECS containers.
+- Delivery SLAs should be role-specific, not one-size-fits-all: use 30-minute progress cadence for implementation/architecture/product work and 20-minute cadence for QA validation.
+- PM escalation rules need a circuit breaker with explicit retry limits and human escalation; "escalate" alone is not enough.
+- QA timing rules must define what one validation cycle means, including the single allowed retry case for transient failures.
+- Keep workflow-enforcement specs scoped to workflow behavior; unrelated tooling guidance such as Context7 belongs in a separate concern.
+- For blocked states, specify the ownership mutation explicitly: reassign to the next owner immediately, or to PM for triage if no next owner is clear; never leave the ticket blocked on the same agent or unassigned.
+- Bootstrap-only config metadata must never be merged into persisted `~/.openclaw/openclaw.json`; strip custom rollout/bootstrap keys before writing runtime config or OpenClaw will reject the file at startup.
+- After an ECS deployment circuit breaker trips during a stack update, fix the runtime issue first, let CloudFormation finish rolling back, then redeploy from `UPDATE_ROLLBACK_COMPLETE`; retrying against an in-progress rollback just compounds the failure state.
+- PM escalation rules must not route routine stale-ticket coordination back to Kaise; on the terminal PM cycle, PM must mutate ownership/state itself and only escalate to Kaise for genuine system-wide or decision-level exceptions.
+- QA needs an explicit end-of-cycle verdict deadline, not just a start-of-cycle artifact deadline; otherwise it can hide in "finalizing" or "reviewing findings" loops after the real validation work is already done.
+- For QA handoff, the verdict and the Linear status/assignee mutation must be treated as one atomic closeout step; if those are separate, QA will still strand tickets after reporting the result.
+- Do not treat Linear assignee emails as valid Slack mention syntax; Slack follow-ups for app-based agents must use plain agent IDs/display names or real known Slack `<@U...>` IDs only.
+- Slack mrkdwn rendering must not preserve arbitrary `<@...>` tokens; only real Slack mention token shapes should survive formatting, and PM Slack copy must never include `@mostrom.io` email identities even as plain text.
+- Distinguish Slack identities from Linear identities: `kaise@mostrom.io` may map to a real Slack user, but agent `@mostrom.io` addresses are workflow identities only and must never be rendered as Slack tags.
+- Pause, cancel, or stand-down instructions must be scoped carefully: unless a newer human instruction explicitly pauses a given agent globally, a fresh ticket assignment to that agent overrides older generic stop language.
+- OpenClaw's write tool is workspace-root scoped in this stack; if agents need scratch files, prompt them toward repo-local temp paths like `tasks/tmp/` instead of `/tmp`.

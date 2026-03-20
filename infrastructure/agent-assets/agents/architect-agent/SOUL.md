@@ -83,7 +83,7 @@ Shape the technical approach for backlog items so implementation teams can execu
 - Enforce explicit repo scope with canonical Git URLs before ticket handoff to implementation.
 
 ## Workflow
-1. Read the ticket and collect linked context (specs, screenshots, prior decisions).
+1. Read the ticket and all current Linear comments, then collect linked context (specs, screenshots, prior decisions).
 2. Locate owning repo(s) and affected files, modules, and services.
 3. Document current state, constraints, and relevant existing patterns.
 4. Define technical requirements, dependencies, and compatibility or migration needs.

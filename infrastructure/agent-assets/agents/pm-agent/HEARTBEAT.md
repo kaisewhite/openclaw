@@ -1,7 +1,32 @@
 # HEARTBEAT.md - PM Agent
 
-- Check assigned scoping work for missing artifacts in the last 20 minutes.
+- Check PM-owned scoping work for missing artifacts in the last 30 minutes.
+- Check active tickets assigned to `architect-agent@mostrom.io`, `fullstack-agent@mostrom.io`, `codex-agent@mostrom.io`, and `qa-agent@mostrom.io`.
+- Treat stale-ticket SLAs as role-specific:
+  - `architect-agent@mostrom.io`, `fullstack-agent@mostrom.io`, `codex-agent@mostrom.io`, and PM-owned scoping work: stale after 30 minutes without a real artifact or blocker evidence
+  - `qa-agent@mostrom.io`: stale after 20 minutes without a decisive verdict or blocker evidence
+- For the first violation, post one directed follow-up in Slack channel `C0AGWNWB2MV` naming the responsible agent and the exact corrective action required.
+- In Slack follow-ups, use plain agent IDs/display names or a known real Slack `<@U...>` token. Do not format `@mostrom.io` emails like Slack mentions.
+- Do not include `@mostrom.io` email identities anywhere in Slack follow-up text. Use `qa-agent`, `fullstack-agent`, `codex-agent`, `architect-agent`, `pm-agent`, or `Kaise`.
+- Only real Slack users may be tagged. Agent apps must stay plain-text labels in Slack follow-up messages.
+- If the same violation persists on the next PM cycle without a ticket mutation or new evidence, post one escalation in Slack and one Linear comment naming the stale owner, missing artifact, and deadline for correction.
+- If the same violation persists through a third PM cycle, take coordination action now instead of asking Kaise for routine intervention:
+  - reassign the ticket to the obvious next owner when the current owner or state is clearly wrong
+  - if the next owner is not obvious, assign `pm-agent@mostrom.io` for coordination triage and state the exact routing decision still required
+  - for stale QA specifically, move the ticket out of QA limbo now; do not leave it assigned to `qa-agent@mostrom.io` without a verdict
+- For QA-specific stale signals, do not wait for broad inactivity only:
+  - if QA says validation is complete or nearly complete but no verdict lands within 10 minutes, treat that as stale and enforce immediate routing
+  - if QA misses its own promised verdict deadline, skip passive reminder language and require the decisive ticket mutation now
+  - if QA posts a verdict but does not complete the matching Linear state/assignee mutation within 2 minutes, treat that as stale immediately and require the ticket mutation now
+- Escalate to Kaise only for true exceptions:
+  - multiple agents appear operationally down
+  - PM cannot determine a valid next owner after triage
+  - a product or priority decision is required from Kaise
+- After PM takes coordination action, continue follow-up with the new owner on the next cycle; do not post passive recommendations.
 - If a ticket is ready for architecture, move it to `Backlog` and assign `architect-agent@mostrom.io` now.
 - If a decision or scope question is blocking progress, post the exact question and owner now.
 - If repo ownership is still unclear, resolve or escalate it now instead of leaving the ticket vague.
+- Do not take ownership of someone else's engineering ticket during heartbeat follow-up. Escalate, chase, and require the assignee to update Linear and complete the handoff.
+- PM may correct stale or incorrect ownership routing in Linear when the right next owner is obvious, but PM may not auto-pass QA, auto-close implementation, or invent delivery evidence.
+- If a ticket is newly assigned to `pm-agent`, treat that assignment as active work even if an older generic pause instruction exists. Only a newer PM-specific stop instruction can suppress that assignment.
 - If nothing needs attention, reply `HEARTBEAT_OK`.

@@ -109,6 +109,18 @@ const hostedBrowserOverrides = {
   },
 } as const;
 
+const defaultCronOverrides = {
+  cron: {
+    enabled: true,
+    maxConcurrentRuns: 2,
+    sessionRetention: "24h",
+    runLog: {
+      maxBytes: "2mb",
+      keepLines: 2000,
+    },
+  },
+} as const;
+
 const sharedPromptDocs = {
   agentsPromptPath: "agent-assets/shared/AGENTS.md",
 } as const;
@@ -158,12 +170,74 @@ const defaultOpenclawOverrides = {
   ...defaultPluginsOverrides,
   ...defaultToolsOverrides,
   ...hostedBrowserOverrides,
+  ...defaultCronOverrides,
   agents: {
     defaults: defaultAgentDefaults,
   },
 } as const;
 
+const pmDailyStandupMessage = [
+  "Produce the Mostrom daily delivery standup for the last 24 hours.",
+  "Review active assigned Linear issues, current ownership, latest Linear comments, and any pushed branch or commit evidence.",
+  "Post one consolidated update for Slack channel C0AGWNWB2MV.",
+  "Use one section each for architect-agent, fullstack-agent, codex-agent, and qa-agent.",
+  "For each section include: worked in last 24h, current focus, blockers or missing handoff steps, and required next action.",
+  "Call out stale tickets, missing branch or commit evidence, missing Linear updates, and broken reassignment explicitly.",
+  "Do not invent work. If no evidence exists, say so directly.",
+].join(" ");
+
+const pmCronBootstrapOverrides = {
+  bootstrap: {
+    cronJobs: [
+      {
+        id: "pm-daily-standup",
+        agentId: "pm-agent",
+        name: "PM Daily Standup",
+        description: "Daily 9 AM ET delivery standup in #development",
+        enabled: true,
+        deleteAfterRun: false,
+        schedule: {
+          kind: "cron",
+          expr: "0 9 * * *",
+          tz: "America/New_York",
+          staggerMs: 0,
+        },
+        sessionTarget: "isolated",
+        wakeMode: "next-heartbeat",
+        payload: {
+          kind: "agentTurn",
+          message: pmDailyStandupMessage,
+          timeoutSeconds: 900,
+        },
+        delivery: {
+          mode: "announce",
+          channel: "slack",
+          to: "channel:C0AGWNWB2MV",
+          bestEffort: false,
+        },
+      },
+    ],
+  },
+} as const;
+
+const pmAgentOpenclawOverrides = {
+  ...defaultOpenclawOverrides,
+  ...pmCronBootstrapOverrides,
+  agents: {
+    defaults: {
+      ...defaultAgentDefaults,
+      heartbeat: {
+        ...defaultAgentDefaults.heartbeat,
+        every: "30m",
+        target: "slack",
+        to: "C0AGWNWB2MV",
+      },
+    },
+  },
+} as const;
+
 const directEnvSharedKeys = [
+  "CONTEXT7_API_KEY",
   "GEMINI_API_KEY",
   "GITHUB_TOKEN",
   "GMAIL_APP_PASSWORD",
@@ -323,7 +397,7 @@ export const project: Project = {
         ...agentPromptPaths("pm-agent"),
         allowTools: ["*"],
         denyTools: ["agentToAgent"],
-        configOverrides: defaultOpenclawOverrides,
+        configOverrides: pmAgentOpenclawOverrides,
       },
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
