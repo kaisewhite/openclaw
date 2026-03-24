@@ -1,5 +1,0 @@
-appId:A0AKC04KEAU
-clientId:5371920414193.10658004660368
-clientSecret:774f836c7e5b7cbc4ff1a6d1ddf3176f
-signingSecret:d2cbb488e07edff6e226c68f3cc51568
-verificationToken:xyCo6y7FTlgnHKYOvTvNZlRy

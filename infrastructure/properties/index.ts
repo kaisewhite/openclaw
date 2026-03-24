@@ -180,7 +180,7 @@ const pmDailyStandupMessage = [
   "Produce the Mostrom daily delivery standup for the last 24 hours.",
   "Review active assigned Linear issues, current ownership, latest Linear comments, and any pushed branch or commit evidence.",
   "Post one consolidated update for Slack channel C0AGWNWB2MV.",
-  "Use one section each for architect-agent, fullstack-agent, codex-agent, and qa-agent.",
+  "Use one section each for architect-agent, fullstack-agent, and qa-agent.",
   "For each section include: worked in last 24h, current focus, blockers or missing handoff steps, and required next action.",
   "Call out stale tickets, missing branch or commit evidence, missing Linear updates, and broken reassignment explicitly.",
   "Do not invent work. If no evidence exists, say so directly.",
@@ -322,33 +322,6 @@ export const project: Project = {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
         directEnvKeys: buildDirectEnvKeys({
           provider: "anthropic",
-        }),
-      },
-    },
-    {
-      id: "codex-agent",
-      displayName: "Codex Agent",
-      description: "Scoped implementation and delivery agent",
-      runtime: {
-        cpu: 8192,
-        memoryLimitMiB: 16384,
-        desiredCount: 1,
-      },
-      model: {
-        provider: "openai-codex",
-        model: "gpt-5.3-codex",
-      },
-      openclaw: {
-        ...sharedPromptDocs,
-        ...agentPromptPaths("codex-agent"),
-        allowTools: ["*"],
-        denyTools: [],
-        configOverrides: defaultOpenclawOverrides,
-      },
-      secrets: {
-        secretName: "/openclaw/mgmt/agents/codex-agent",
-        directEnvKeys: buildDirectEnvKeys({
-          provider: "openai-codex",
         }),
       },
     },

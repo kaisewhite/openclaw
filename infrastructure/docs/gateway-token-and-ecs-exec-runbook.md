@@ -48,7 +48,7 @@ Note:
 ## 5. Force New Deployments So Tasks Reload Secrets
 
 ```bash
-for svc in architect-agent fullstack-agent codex-agent qa-agent pm-agent; do
+for svc in architect-agent fullstack-agent qa-agent pm-agent; do
   aws ecs update-service \
     --cluster openclaw \
     --service "$svc" \
@@ -60,14 +60,13 @@ done
 ## 6. Exec Into A Running Agent Container (Accurate One-Liner)
 
 ```bash
-AGENT=codex-agent; TASK_ARN=$(AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs list-tasks --cluster openclaw --service-name "$AGENT" --desired-status RUNNING --query 'taskArns[0]' --output text); AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs execute-command --cluster openclaw --task "$TASK_ARN" --container "mgmt-${AGENT}-container" --interactive --command "/bin/bash"
+AGENT=fullstack-agent; TASK_ARN=$(AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs list-tasks --cluster openclaw --service-name "$AGENT" --desired-status RUNNING --query 'taskArns[0]' --output text); AWS_PROFILE=mostrom_mgmt AWS_REGION=us-east-1 aws ecs execute-command --cluster openclaw --task "$TASK_ARN" --container "mgmt-${AGENT}-container" --interactive --command "/bin/bash"
 ```
 
 Switch `AGENT=` to any of:
 
 - `architect-agent`
 - `fullstack-agent`
-- `codex-agent`
 - `qa-agent`
 - `pm-agent`
 
@@ -110,7 +109,7 @@ Check running task for a service:
 ```bash
 aws ecs list-tasks \
   --cluster openclaw \
-  --service-name codex-agent \
+  --service-name fullstack-agent \
   --desired-status RUNNING \
   --query 'taskArns' \
   --output table

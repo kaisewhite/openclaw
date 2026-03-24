@@ -50,7 +50,7 @@ After pushing secrets, restart affected agent services so tasks reload env from 
 export AWS_PROFILE=mostrom_mgmt
 export AWS_REGION=us-east-1
 
-for svc in architect-agent fullstack-agent codex-agent qa-agent pm-agent; do
+for svc in architect-agent fullstack-agent qa-agent pm-agent; do
   aws ecs update-service \
     --cluster openclaw \
     --service "$svc" \

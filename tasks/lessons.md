@@ -48,3 +48,6 @@
 - Distinguish Slack identities from Linear identities: `kaise@mostrom.io` may map to a real Slack user, but agent `@mostrom.io` addresses are workflow identities only and must never be rendered as Slack tags.
 - Pause, cancel, or stand-down instructions must be scoped carefully: unless a newer human instruction explicitly pauses a given agent globally, a fresh ticket assignment to that agent overrides older generic stop language.
 - OpenClaw's write tool is workspace-root scoped in this stack; if agents need scratch files, prompt them toward repo-local temp paths like `tasks/tmp/` instead of `/tmp`.
+- Direct merges into `dev` or `main` are human-only; agents must work through PRs, and architect's post-QA role is PR creation/readiness plus routing to Kaise, not merging.
+- When the user asks to remove an agent entirely, remove the full live surface: stack config, prompt assets, manifests, credential stubs, routing text, and example secret mappings, not just the model assignment.
+- When the user defines a new workflow in a repo task doc, rewrite every active role prompt around that state machine in one pass; do not layer partial rules onto the old lifecycle.

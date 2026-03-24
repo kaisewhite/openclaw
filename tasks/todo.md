@@ -947,3 +947,89 @@
   - ECS exec against the live `mgmt-pm-agent:34` task confirmed the mounted PM prompt text now contains the fresh-assignment override rule
 - Remaining risk:
   - the PM CloudFormation stack is still in the normal ECS rollout tail while the new task is already running, so stack status may lag the live runtime briefly
+
+## 2026-03-21 Architect PR-Only Merge Flow
+
+- [x] Inspect architect and shared workflow instructions for direct merge behavior.
+- [x] Patch agent rules so architect creates or validates PRs into `dev` instead of merging directly.
+- [x] Reserve direct merges into `dev` and `main` for Kaise only.
+- [x] Verify prompt changes and document the result.
+
+### Review
+
+- Current failure:
+  - `architect-agent` is merging directly into `dev` instead of ensuring a PR exists from the ticket feature branch into `dev`.
+- Rule changes:
+  - shared workflow now says all agent-delivered code must land through a PR targeting `dev`
+  - shared workflow now says no agent may merge directly into `dev` or `main`, and that direct merges are reserved for Kaise only
+  - architect's post-QA workflow now creates the missing PR to `dev` when needed, reviews it for architecture readiness, and routes the ticket to `kaise@mostrom.io` for the human merge
+  - architect permissions now explicitly deny merge authority
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - verified the architect task definition `mgmt-architect-agent:26` now contains:
+    - `If no PR exists yet, create a PR from the ticket's feature branch into dev`
+    - `Do not merge the PR. Direct merges into dev or main are reserved for Kaise only`
+    - `Assign the ticket to kaise@mostrom.io for the human merge when the PR is merge-ready`
+  - verified the codex task definition `mgmt-codex-agent:13` now carries the shared `AGENTS.md` rule that no agent may merge directly into `dev` or `main`
+  - deployed the five agent stacks so the shared rule rolls across the fleet
+- Remaining risk:
+  - architect and codex services are still in the usual ECS rollout tail, so CloudFormation/ECS status may lag the already-minted task definitions briefly
+
+## 2026-03-21 Remove Codex Agent
+
+- [x] Inspect active infrastructure references for `codex-agent`.
+- [x] Remove `codex-agent` from agent configuration, prompt routing, manifests, and example secret mappings.
+- [x] Verify the remaining infrastructure and document the removal result.
+
+### Review
+
+- Current requirement:
+  - `codex-agent` should be removed entirely rather than retargeted to another model.
+- Rule changes:
+  - removed `codex-agent` from `infrastructure/properties/index.ts`, so the CDK app no longer defines a codex ECS service
+  - deleted the `infrastructure/agent-assets/agents/codex-agent/` prompt bundle
+  - deleted the codex Slack manifest, credential stub, and dedicated helper script
+  - updated architect, QA, and PM prompt routing to assume a single implementation owner (`fullstack-agent`) instead of splitting through codex
+  - removed codex from example dispatcher mappings, example agent secrets, and infra docs/runbooks
+- Verification:
+  - `cd infrastructure && npx tsc --noEmit`
+  - `rg -n --glob '!infrastructure/cdk.out*' --glob '!**/cdk.out*' --glob '!tasks/todo.md' --glob '!tasks/lessons.md' 'codex-agent' infrastructure -S` now returns no active infrastructure hits
+  - `npm run cdk -- list` no longer includes `openclaw-codex-agent-cdk`
+  - CloudFormation confirms `openclaw-codex-agent-cdk` no longer exists
+  - ECS confirms service `codex-agent` is `INACTIVE`
+  - redeployed `openclaw-shared-services-cdk`, which removed the codex EFS access point successfully
+- Remaining risk:
+  - `openclaw-architect-agent-cdk` is still in the usual ECS rollout tail while the remaining codex-free stack updates converge
+
+## 2026-03-21 Agent Flow Rewrite From tasks/agent-flow.md
+
+- [x] Review the proposed workflow in `tasks/agent-flow.md` against the live prompt stack.
+- [x] Rewrite the shared workflow contract for the new lifecycle: `Backlog -> Planned -> Test Designed -> In Progress -> In Review -> Ready for PR -> Completed`.
+- [x] Rewrite `architect-agent` for architecture planning first and final PR-readiness last.
+- [x] Rewrite `qa-agent` to own both QA spec (`strict-tdd`) and QA validation phases.
+- [x] Rewrite `fullstack-agent` to implement strictly against the QA-authored plan and hand back to QA validation.
+- [x] Rewrite `pm-agent` monitoring rules so it enforces the new owner/status transitions.
+- [x] Verify prompt consistency and document the final workflow delta.
+
+### Review
+
+- Replaced the old `Backlog -> Todo -> In Progress -> Needs Review -> In Review -> DONE` lifecycle in the active prompt stack with the new workflow from `tasks/agent-flow.md`.
+- Shared workflow now defines the canonical owner/status chain:
+  - `Backlog` -> `architect-agent`
+  - `Planned` -> `qa-agent` for QA spec
+  - `Test Designed` -> `fullstack-agent`
+  - `In Progress` -> `fullstack-agent`
+  - `In Review` -> `qa-agent` for validation
+  - `Ready for PR` -> `architect-agent`
+  - `Completed` -> Kaise after architect creates or verifies the PR to `dev`
+- `architect-agent` now owns two clean stages:
+  - pre-implementation planning with `lead-architect`
+  - final PR creation and architecture review at `Ready for PR`
+- `qa-agent` now owns two clean stages:
+  - QA spec with `strict-tdd`
+  - QA validation against the authored QA spec, including anti-cheating checks
+- `fullstack-agent` now implements against the architect plan plus QA-authored test design and hands off at `In Review`, not `Needs Review`.
+- `pm-agent` now enforces the new owner/status pairings and stale-stage expectations instead of the old workflow.
+- Verification:
+  - `rg -n -e 'Needs Review' -e '\\bTodo\\b' -e '\\bDONE\\b' infrastructure/agent-assets/shared infrastructure/agent-assets/agents/pm-agent infrastructure/agent-assets/agents/architect-agent infrastructure/agent-assets/agents/qa-agent infrastructure/agent-assets/agents/fullstack-agent -S` returned no matches
+  - reviewed the rewritten prompt files directly to confirm the new flow is consistent across shared, PM, architect, QA, and fullstack roles

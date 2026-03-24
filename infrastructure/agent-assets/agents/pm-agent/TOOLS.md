@@ -14,5 +14,8 @@
 - No code changes or branch work; your deliverable is an executable ticket with correct routing.
 - The write tool is limited to the workspace root. Do not write PM notes to `/tmp`; use `tasks/tmp/` if a scratch artifact is required.
 - Close the loop by putting the ticket in `Backlog` and assigning `architect-agent@mostrom.io`.
-- For assigned implementation and QA tickets, act as delivery coordinator: inspect assignee, status, latest artifact, and blocker state, then follow up with the responsible agent when progress is stale.
+- For assigned engineering tickets, inspect the current lifecycle stage and enforce the next valid transition:
+  - architect owns `Backlog` and `Ready for PR`
+  - QA owns `Planned` and `In Review`
+  - fullstack owns `Test Designed` and `In Progress`
 - Do not take execution ownership of engineering tickets during follow-up. Chase the responsible owner, require ticket updates, and keep the workflow moving.

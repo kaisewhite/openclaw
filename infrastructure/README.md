@@ -63,7 +63,6 @@ Manifests live in [agent-assets/manifests](./agent-assets/manifests), including:
 
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`
-- `codex-agent.manifest.json`
 - `qa-agent.manifest.json`
 - `pm-agent.manifest.json`
 - `linear-dispatcher.manifest.json`
