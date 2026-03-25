@@ -4,6 +4,7 @@ FROM ${BASE_IMAGE}
 USER root
 
 ARG DEMBRANDT_VERSION=0.6.1
+ARG SUPERPOWERS_COMMIT=8ea39819eed74fe2a0338e71789f06b30e953041
 ARG OPENCLAW_AGENT_APT_PACKAGES="ca-certificates curl wget git git-lfs gh jq yq ripgrep fd-find unzip zip tar less procps psmisc tree rsync openssh-client python3 python3-pip python3-venv python3-poetry pipx make build-essential awscli shellcheck yamllint pre-commit sqlite3 postgresql-client default-mysql-client redis-tools dnsutils netcat-openbsd lsof iputils-ping chromium"
 
 RUN apt-get update && \
@@ -28,7 +29,14 @@ COPY infrastructure/docker/openclaw-entrypoint.sh /usr/local/bin/openclaw-entryp
 COPY infrastructure/docker/openclaw-bootstrap.mjs /usr/local/bin/openclaw-bootstrap.mjs
 COPY infrastructure/agent-assets/skills /opt/openclaw/skills
 
-RUN chmod 0755 /usr/local/bin/openclaw-entrypoint.sh /usr/local/bin/openclaw-bootstrap.mjs && \
+RUN tmpdir="$(mktemp -d)" && \
+    curl -fsSL "https://github.com/obra/superpowers/archive/${SUPERPOWERS_COMMIT}.tar.gz" -o "${tmpdir}/superpowers.tar.gz" && \
+    tar -xzf "${tmpdir}/superpowers.tar.gz" -C "${tmpdir}" && \
+    src_dir="$(find "${tmpdir}" -maxdepth 1 -type d -name 'superpowers-*' | head -n1)" && \
+    test -n "${src_dir}" && \
+    rsync -a "${src_dir}/skills/" /opt/openclaw/skills/ && \
+    rm -rf "${tmpdir}" && \
+    chmod 0755 /usr/local/bin/openclaw-entrypoint.sh /usr/local/bin/openclaw-bootstrap.mjs && \
     chown -R node:node /opt/openclaw/skills
 
 USER node

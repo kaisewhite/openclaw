@@ -173,6 +173,7 @@ Skills baseline:
 - Shared skill set now includes:
   - Context7 documentation lookup (`context7-cli`, `find-docs`)
   - Impeccable design skill pack (`frontend-design` plus design steering commands)
+  - Superpowers workflow skill pack from `obra/superpowers`, pinned in the image build at commit `8ea39819eed74fe2a0338e71789f06b30e953041`
 
 Plugin baseline:
 
@@ -183,7 +184,7 @@ Slack rendering baseline:
 - Slack live preview streaming is disabled by default (`channels.slack.streaming = "off"`).
 - This ensures final responses are delivered through OpenClaw's Markdown-to-Slack mrkdwn conversion path for cleaner formatting.
 
-At startup, the entrypoint verifies required binaries and fails fast if missing.
+At startup, the entrypoint verifies required binaries and required skill anchors and fails fast if either is missing.
 
 ## Linear Webhook
 

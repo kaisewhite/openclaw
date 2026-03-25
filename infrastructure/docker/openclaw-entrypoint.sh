@@ -48,6 +48,23 @@ verify_required_bins() {
   fi
 }
 
+verify_required_skills() {
+  local required="${OPENCLAW_REQUIRED_SKILLS:-using-superpowers brainstorming writing-plans test-driven-development systematic-debugging verification-before-completion}"
+  local missing=()
+  local skill
+  for skill in ${required}; do
+    if [ ! -f "/opt/openclaw/skills/${skill}/SKILL.md" ]; then
+      missing+=("${skill}")
+    fi
+  done
+
+  if [ "${#missing[@]}" -gt 0 ]; then
+    echo "[bootstrap] Missing required skills: ${missing[*]}"
+    echo "[bootstrap] Rebuild image with required skill packs baked in."
+    exit 1
+  fi
+}
+
 cleanup_stale_session_locks() {
   local lock_ttl_seconds="${OPENCLAW_SESSION_LOCK_TTL_SECONDS:-300}"
   local now_epoch
@@ -80,6 +97,7 @@ OPENCLAW_STATE_DIR="$(resolve_state_dir)"
 export OPENCLAW_STATE_DIR
 export OPENCLAW_CONFIG_PATH="${OPENCLAW_CONFIG_PATH:-${OPENCLAW_STATE_DIR}/openclaw.json}"
 verify_required_bins
+verify_required_skills
 cleanup_stale_session_locks
 
 echo "[bootstrap] Reconciling OpenClaw runtime config"

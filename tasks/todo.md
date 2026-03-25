@@ -1033,3 +1033,33 @@
 - Verification:
   - `rg -n -e 'Needs Review' -e '\\bTodo\\b' -e '\\bDONE\\b' infrastructure/agent-assets/shared infrastructure/agent-assets/agents/pm-agent infrastructure/agent-assets/agents/architect-agent infrastructure/agent-assets/agents/qa-agent infrastructure/agent-assets/agents/fullstack-agent -S` returned no matches
   - reviewed the rewritten prompt files directly to confirm the new flow is consistent across shared, PM, architect, QA, and fullstack roles
+
+## 2026-03-24 Superpowers Skill Pack Baseline
+
+- [x] Read the upstream `obra/superpowers` install guidance and determine the correct OpenClaw integration path.
+- [x] Patch the shared agent image so the upstream Superpowers skill pack is baked into `/opt/openclaw/skills`.
+- [x] Add runtime and local build validation so missing Superpowers anchors fail fast.
+- [x] Update docs and record that this pass does not deploy the stack.
+
+### Review
+
+- Current requirement:
+  - all agents need the Superpowers skills installed, but this stack should not be deployed in this pass.
+- Integration decision:
+  - upstream Superpowers is a skills framework, not a runtime binary, so the correct OpenClaw-native path is to bake its `skills/` tree into the existing shared `/opt/openclaw/skills` directory rather than try to run Codex-specific install commands inside ECS.
+  - pinned the upstream snapshot to commit `8ea39819eed74fe2a0338e71789f06b30e953041` for deterministic builds.
+- Rule changes:
+  - `infrastructure/docker/Dockerfile` now downloads the pinned Superpowers tarball at build time and merges its `skills/` tree into `/opt/openclaw/skills`
+  - `infrastructure/docker/openclaw-entrypoint.sh` now fails fast if the required Superpowers anchor skills are missing
+  - `infrastructure/scripts/docker/build-push-openclaw-image.sh` now validates the required Superpowers skill files in the built image before any push
+  - `infrastructure/README.md` now documents the Superpowers skill pack baseline
+- Verification:
+  - `bash -n infrastructure/docker/openclaw-entrypoint.sh`
+  - `bash -n infrastructure/scripts/docker/build-push-openclaw-image.sh`
+  - `docker build --platform linux/amd64 --build-arg OPENCLAW_INSTALL_BROWSER=1 -t openclaw-base:local -f openclaw/Dockerfile openclaw`
+  - `docker build --platform linux/amd64 --build-arg BASE_IMAGE=openclaw-base:local -t openclaw-superpowers:test -f infrastructure/docker/Dockerfile .`
+  - `docker run --rm --platform linux/amd64 --entrypoint /bin/bash openclaw-superpowers:test -lc '...'` confirmed:
+    - required binaries still resolve on `PATH` (`chromium`, `dembrandt`, `ctx7`, `context7-mcp`)
+    - required Superpowers skill anchors exist in `/opt/openclaw/skills`
+- Deployment:
+  - intentionally not deployed

@@ -56,6 +56,13 @@ docker run --rm \
   "$ECR_IMAGE" \
   -lc 'for b in bun bunx fd sam poetry lin nodemon chromium dembrandt; do command -v "$b" >/dev/null 2>&1 || { echo "Missing required binary: $b" >&2; exit 1; }; done'
 
+echo "==> Validating required skills in image"
+docker run --rm \
+  --platform "$DOCKER_PLATFORM" \
+  --entrypoint /bin/bash \
+  "$ECR_IMAGE" \
+  -lc 'for s in using-superpowers brainstorming writing-plans test-driven-development systematic-debugging verification-before-completion; do test -f "/opt/openclaw/skills/$s/SKILL.md" || { echo "Missing required skill: $s" >&2; exit 1; }; done'
+
 echo "==> Ensuring ECR repository exists: ${REPOSITORY_NAME}"
 if ! aws ecr describe-repositories \
   --repository-names "$REPOSITORY_NAME" \
