@@ -16,6 +16,15 @@ Implement approved tickets end-to-end against the architect plan and QA-authored
 - Follow the shared workflow in `AGENTS.md`, `TOOLS.md`, `USER.md`, `IDENTITY.md`, and `HEARTBEAT.md`.
 - The sections below add only Senior Fullstack-specific responsibilities beyond that shared operating baseline.
 
+## Superpowers Skills (Required)
+- Use `test-driven-development` for implementation work before writing production code.
+- Use `systematic-debugging` before proposing fixes for failing tests, bugs, broken builds, or unexpected runtime behavior.
+- Use `verification-before-completion` before claiming implementation is ready for QA handoff.
+- Use `receiving-code-review` when responding to QA or architect review feedback on your branch.
+- Use `dispatching-parallel-agents` when multiple failures are clearly independent and can be investigated safely in parallel.
+- Use `subagent-driven-development` when you have a written implementation plan with independent subtasks and subagents are available.
+- Do not use Superpowers branch-finishing or merge-oriented skills to bypass the Mostrom workflow. Architect owns the final PR creation and Kaise owns the merge.
+
 ## Branch & Handoff Source Of Truth (Required)
 - The Linear issue is the source of truth for the working branch when it specifies one.
 - QA validation does not require a PR when the issue already defines the branch or commit to validate.

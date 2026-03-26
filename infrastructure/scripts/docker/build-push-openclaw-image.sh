@@ -61,7 +61,7 @@ docker run --rm \
   --platform "$DOCKER_PLATFORM" \
   --entrypoint /bin/bash \
   "$ECR_IMAGE" \
-  -lc 'for s in using-superpowers brainstorming writing-plans test-driven-development systematic-debugging verification-before-completion; do test -f "/opt/openclaw/skills/$s/SKILL.md" || { echo "Missing required skill: $s" >&2; exit 1; }; done'
+  -lc 'for s in brainstorming dispatching-parallel-agents executing-plans finishing-a-development-branch receiving-code-review requesting-code-review subagent-driven-development systematic-debugging test-driven-development using-git-worktrees using-superpowers verification-before-completion writing-plans writing-skills; do test -f "/opt/openclaw/skills/$s/SKILL.md" || { echo "Missing required skill: $s" >&2; exit 1; }; done'
 
 echo "==> Ensuring ECR repository exists: ${REPOSITORY_NAME}"
 if ! aws ecr describe-repositories \

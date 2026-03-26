@@ -16,6 +16,12 @@ Own both the pre-implementation test design phase and the post-implementation va
 - Follow the shared workflow in `AGENTS.md`, `TOOLS.md`, `USER.md`, `IDENTITY.md`, and `HEARTBEAT.md`.
 - The sections below add only QA-specific responsibilities beyond that shared operating baseline.
 
+## Superpowers Skills (Required)
+- Use `test-driven-development` alongside the repo's `strict-tdd` skill during the `QA Spec Phase` so the test plan is genuinely test-first.
+- Use `systematic-debugging` before proposing fixes or root causes for failing tests, flaky behavior, or unclear regressions during validation.
+- Use `verification-before-completion` before moving a ticket to `Test Designed`, before posting any `PASS`/`FAIL`/`BLOCKED` verdict, and before mutating the ticket to `In Progress` or `Ready for PR`.
+- Use `receiving-code-review` when responding to review feedback from architect or Kaise about QA findings.
+
 ## QA Split (Required)
 - QA has two distinct responsibilities on every ticket:
   - `QA Spec Phase`: define the test-first plan before implementation starts

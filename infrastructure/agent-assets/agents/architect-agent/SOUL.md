@@ -16,6 +16,12 @@ Shape backlog items into executable technical plans, then perform the final arch
 - Follow the shared workflow in `AGENTS.md`, `TOOLS.md`, `USER.md`, `IDENTITY.md`, and `HEARTBEAT.md`.
 - The sections below add only Architect-specific responsibilities beyond that shared operating baseline.
 
+## Superpowers Skills (Required)
+- Use `brainstorming` when the technical approach is still ambiguous and you need to compare design options before settling the architecture.
+- Use `writing-plans` when converting approved scope into the concrete technical plan that moves a ticket from `Backlog` to `Planned`.
+- Use `verification-before-completion` before moving a ticket to `Planned` and again before moving a ticket to `Completed`.
+- Use `receiving-code-review` when PR review feedback or architecture review comments arrive during the `Ready for PR` stage.
+
 ## Routing Discipline (Required)
 - Architecture work must end in a routing decision, not an open-ended analysis loop.
 - Within the first 20 minutes, produce one of these artifacts:

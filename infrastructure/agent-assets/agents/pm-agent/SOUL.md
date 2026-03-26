@@ -15,6 +15,11 @@ Turn product ideas into implementation-ready backlog tickets, then actively enfo
 - Follow the shared workflow in `AGENTS.md`, `TOOLS.md`, `USER.md`, `IDENTITY.md`, and `HEARTBEAT.md`.
 - The sections below add only PM-specific responsibilities beyond that shared operating baseline.
 
+## Superpowers Skills (Required)
+- Use `brainstorming` when a new request or bug report is still ambiguous and you need to clarify options before finalizing scope.
+- Do not use implementation-oriented Superpowers skills such as `writing-plans`, `test-driven-development`, or `systematic-debugging` as a default PM workflow. PM owns scope, routing, accountability, and evidence-backed coordination, not code implementation planning or technical root-cause debugging.
+- Before posting a standup, stale-ticket escalation, or handoff-ready claim, verify the Linear state, assignee, and last real artifact directly instead of relying on generic completion language.
+
 ## Execution Discipline & Routing Rules (Required)
 - PM work must end in a usable ticket, explicit blocker, or explicit ownership transfer.
 - Fresh ticket assignment to `pm-agent` is an explicit instruction to triage that ticket now.

@@ -1050,16 +1050,95 @@
   - pinned the upstream snapshot to commit `8ea39819eed74fe2a0338e71789f06b30e953041` for deterministic builds.
 - Rule changes:
   - `infrastructure/docker/Dockerfile` now downloads the pinned Superpowers tarball at build time and merges its `skills/` tree into `/opt/openclaw/skills`
-  - `infrastructure/docker/openclaw-entrypoint.sh` now fails fast if the required Superpowers anchor skills are missing
-  - `infrastructure/scripts/docker/build-push-openclaw-image.sh` now validates the required Superpowers skill files in the built image before any push
+  - `infrastructure/docker/openclaw-entrypoint.sh` now fails fast if any of the 14 upstream Superpowers skills are missing
+  - `infrastructure/scripts/docker/build-push-openclaw-image.sh` now validates the full 14-skill Superpowers pack in the built image before any push
   - `infrastructure/README.md` now documents the Superpowers skill pack baseline
 - Verification:
   - `bash -n infrastructure/docker/openclaw-entrypoint.sh`
   - `bash -n infrastructure/scripts/docker/build-push-openclaw-image.sh`
   - `docker build --platform linux/amd64 --build-arg OPENCLAW_INSTALL_BROWSER=1 -t openclaw-base:local -f openclaw/Dockerfile openclaw`
   - `docker build --platform linux/amd64 --build-arg BASE_IMAGE=openclaw-base:local -t openclaw-superpowers:test -f infrastructure/docker/Dockerfile .`
-  - `docker run --rm --platform linux/amd64 --entrypoint /bin/bash openclaw-superpowers:test -lc '...'` confirmed:
+  - upstream repo comparison confirmed the Superpowers pack contains 14 skills:
+    - `brainstorming`
+    - `dispatching-parallel-agents`
+    - `executing-plans`
+    - `finishing-a-development-branch`
+    - `receiving-code-review`
+    - `requesting-code-review`
+    - `subagent-driven-development`
+    - `systematic-debugging`
+    - `test-driven-development`
+    - `using-git-worktrees`
+    - `using-superpowers`
+    - `verification-before-completion`
+    - `writing-plans`
+    - `writing-skills`
+  - `docker run --rm --platform linux/amd64 --entrypoint /bin/bash openclaw-superpowers:test -lc '...'` confirmed the image contains all 14 upstream Superpowers skill directories
+  - local repo inspection confirmed the Superpowers skills are build-time baked, not vendored under `infrastructure/agent-assets/skills`
+  - `docker run --rm --platform linux/amd64 --entrypoint /bin/bash openclaw-superpowers:test -lc '...'` also confirmed:
     - required binaries still resolve on `PATH` (`chromium`, `dembrandt`, `ctx7`, `context7-mcp`)
-    - required Superpowers skill anchors exist in `/opt/openclaw/skills`
+    - required Superpowers skill files exist in `/opt/openclaw/skills`
 - Deployment:
   - intentionally not deployed
+
+## 2026-03-26 Superpowers Skill Routing In Agent Prompts
+
+- [x] Review the Superpowers skill set against the active PM, architect, QA, and fullstack roles.
+- [x] Add shared Superpowers routing guidance so agents know when to invoke the right skill class.
+- [x] Add role-specific Superpowers guidance for PM, architect, QA, and fullstack workflows.
+- [x] Verify the prompt stack reflects the intended skill mapping.
+
+### Review
+
+- Current requirement:
+  - agents must not merely have Superpowers installed; they must know which Superpowers skills apply at which stage of the Mostrom workflow.
+- Rule changes:
+  - shared workflow now defines a Superpowers routing layer:
+    - `brainstorming` for ambiguous new work
+    - `writing-plans` for concrete multi-step planning
+    - `test-driven-development` for implementation and test-plan creation
+    - `systematic-debugging` for bugs, failures, and flaky behavior
+    - `verification-before-completion` before completion or readiness claims
+    - `dispatching-parallel-agents` / `subagent-driven-development` for independent parallel work
+  - `pm-agent` now explicitly uses:
+    - `brainstorming`
+    - `writing-plans`
+    - `verification-before-completion`
+    - `systematic-debugging`
+  - `architect-agent` now explicitly uses:
+    - `brainstorming`
+    - `writing-plans`
+    - `verification-before-completion`
+    - `receiving-code-review`
+  - `qa-agent` now explicitly uses:
+    - `test-driven-development` alongside `strict-tdd`
+    - `systematic-debugging`
+    - `verification-before-completion`
+    - `receiving-code-review`
+  - `fullstack-agent` now explicitly uses:
+    - `test-driven-development`
+    - `systematic-debugging`
+    - `verification-before-completion`
+    - `receiving-code-review`
+    - `dispatching-parallel-agents`
+    - `subagent-driven-development`
+  - fullstack guidance now explicitly forbids using Superpowers branch-finishing skills to bypass the architect-owned PR stage or Kaise-owned merge step
+- Verification:
+  - reviewed the rewritten shared and per-agent prompt sections directly to confirm each active role has an explicit Superpowers mapping
+
+## 2026-03-26 PM Superpowers Scope Correction
+
+- [x] Record the user correction that PM was assigned overly broad engineering-oriented Superpowers skills.
+- [x] Narrow `pm-agent` Superpowers guidance to PM-appropriate behavior only.
+- [x] Verify the PM prompt no longer instructs PM to use implementation-planning or debugging skills by default.
+
+### Review
+
+- Current correction:
+  - PM should not be pushed into engineering-heavy Superpowers workflows such as `writing-plans` or `systematic-debugging` as a normal role behavior.
+- Rule changes:
+  - `pm-agent` now keeps only `brainstorming` as an explicit Superpowers skill trigger for ambiguous scope work.
+  - PM guidance now explicitly says implementation-oriented skills like `writing-plans`, `test-driven-development`, and `systematic-debugging` are not default PM workflows.
+  - PM still performs evidence-backed coordination by directly checking Linear state, assignee, and last real artifact before posting standups or escalations.
+- Verification:
+  - reviewed `infrastructure/agent-assets/agents/pm-agent/SOUL.md` and confirmed the over-broad PM skill list was removed

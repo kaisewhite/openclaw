@@ -49,7 +49,7 @@ verify_required_bins() {
 }
 
 verify_required_skills() {
-  local required="${OPENCLAW_REQUIRED_SKILLS:-using-superpowers brainstorming writing-plans test-driven-development systematic-debugging verification-before-completion}"
+  local required="${OPENCLAW_REQUIRED_SKILLS:-brainstorming dispatching-parallel-agents executing-plans finishing-a-development-branch receiving-code-review requesting-code-review subagent-driven-development systematic-debugging test-driven-development using-git-worktrees using-superpowers verification-before-completion writing-plans writing-skills}"
   local missing=()
   local skill
   for skill in ${required}; do

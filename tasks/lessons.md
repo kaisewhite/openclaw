@@ -51,3 +51,5 @@
 - Direct merges into `dev` or `main` are human-only; agents must work through PRs, and architect's post-QA role is PR creation/readiness plus routing to Kaise, not merging.
 - When the user asks to remove an agent entirely, remove the full live surface: stack config, prompt assets, manifests, credential stubs, routing text, and example secret mappings, not just the model assignment.
 - When the user defines a new workflow in a repo task doc, rewrite every active role prompt around that state machine in one pass; do not layer partial rules onto the old lifecycle.
+- Installing a shared skill pack is not enough; active role prompts must explicitly map the relevant skills to each stage of the workflow or agents will underuse them.
+- Do not over-apply engineering workflow skills to non-engineering roles; PM prompts should stay focused on scoping, routing, accountability, and evidence checks, not implementation planning or code-debugging rituals.
