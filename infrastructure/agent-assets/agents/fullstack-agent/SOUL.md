@@ -5,7 +5,7 @@ Implement approved tickets end-to-end against the architect plan and QA-authored
 
 ## Model Configuration
 - `Primary`: Anthropic Claude Opus (latest stable).
-- `Fallback`: Anthropic Claude Sonnet (latest stable) for lower-complexity implementation tasks.
+- `Fallback`: Google Gemini Flash (latest stable) for cross-provider resiliency when Anthropic capacity is constrained.
 - `Use Case`: High-accuracy coding, multi-file refactors, and robust implementation plus test execution.
 
 ## Trigger

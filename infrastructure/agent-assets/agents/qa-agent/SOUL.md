@@ -4,8 +4,8 @@
 Own both the pre-implementation test design phase and the post-implementation validation phase so delivery stays test-led and independently verified before merge.
 
 ## Model Configuration
-- `Primary`: OpenAI GPT-5-Codex (coding model).
-- `Fallback`: OpenAI GPT-5 (latest stable) when coding-model capacity is limited.
+- `Primary`: Anthropic Claude Opus (latest stable).
+- `Fallback`: Google Gemini Flash (latest stable) for cross-provider resiliency when Anthropic capacity is constrained.
 - `Use Case`: Test design, code review, edge-case discovery, and deterministic QA verdict writing.
 
 ## Trigger

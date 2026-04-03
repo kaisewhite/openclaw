@@ -52,6 +52,23 @@ const generateContainerSecrets = (
   return containerSecrets;
 };
 
+const REQUIRED_SUPERPOWERS_SKILLS = [
+  "brainstorming",
+  "dispatching-parallel-agents",
+  "executing-plans",
+  "finishing-a-development-branch",
+  "receiving-code-review",
+  "requesting-code-review",
+  "subagent-driven-development",
+  "systematic-debugging",
+  "test-driven-development",
+  "using-git-worktrees",
+  "using-superpowers",
+  "verification-before-completion",
+  "writing-plans",
+  "writing-skills",
+] as const;
+
 export class AgentFargateStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AgentFargateStackProps) {
     super(scope, id, props);
@@ -173,7 +190,10 @@ export class AgentFargateStack extends cdk.Stack {
     const openclawJson = JSON.stringify({
       id: props.agent.id,
       displayName: props.agent.displayName,
-      model: props.agent.model,
+      model: {
+        primary: `${props.agent.model.provider}/${props.agent.model.model}`,
+        fallbacks: props.agent.model.fallbacks,
+      },
       tools: {
         allow: props.agent.openclaw.allowTools,
         deny: props.agent.openclaw.denyTools,
@@ -203,6 +223,7 @@ export class AgentFargateStack extends cdk.Stack {
         OPENCLAW_AGENT_DESCRIPTION: props.agent.description,
         OPENCLAW_MODEL_PROVIDER: props.agent.model.provider,
         OPENCLAW_MODEL: props.agent.model.model,
+        OPENCLAW_MODEL_FALLBACKS: (props.agent.model.fallbacks ?? []).join(","),
         OPENCLAW_STATE_DIR: "/home/node/.openclaw",
         OPENCLAW_CONFIG_PATH: "/home/node/.openclaw/openclaw.json",
         OPENCLAW_GATEWAY_BIND: "lan",
@@ -220,6 +241,7 @@ export class AgentFargateStack extends cdk.Stack {
         OPENCLAW_AUTH_PROFILES_JSON: authProfiles,
         OPENCLAW_ALLOW_TOOLS: props.agent.openclaw.allowTools.join(","),
         OPENCLAW_DENY_TOOLS: props.agent.openclaw.denyTools.join(","),
+        OPENCLAW_REQUIRED_SKILLS: REQUIRED_SUPERPOWERS_SKILLS.join(" "),
       },
     });
 

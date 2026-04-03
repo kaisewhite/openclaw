@@ -26,6 +26,7 @@ const AGENT_DIR =
 const SESSIONS_DIR = path.join(path.dirname(AGENT_DIR), "sessions");
 const AUTH_PROFILES_PATH =
   process.env.OPENCLAW_AUTH_PROFILES_PATH?.trim() || path.join(AGENT_DIR, "auth-profiles.json");
+const CODEX_CONFIG_PATH = process.env.OPENCLAW_CODEX_CONFIG_PATH?.trim() || "/home/node/.codex/config.toml";
 const AGENTS_PATH = process.env.OPENCLAW_AGENTS_PATH?.trim() || path.join(WORKSPACE_DIR, "AGENTS.md");
 const SOUL_PATH = process.env.OPENCLAW_SOUL_PATH?.trim() || path.join(WORKSPACE_DIR, "SOUL.md");
 const TOOLS_PATH = process.env.OPENCLAW_TOOLS_PATH?.trim() || path.join(WORKSPACE_DIR, "TOOLS.md");
@@ -153,6 +154,18 @@ const resolveModelRef = (payload) => {
   return undefined;
 };
 
+const resolveModelFallbacks = (payload) => {
+  const envFallbacks = parseCsv(process.env.OPENCLAW_MODEL_FALLBACKS);
+  if (envFallbacks.length > 0) {
+    return envFallbacks;
+  }
+  const payloadFallbacks = payload?.model?.fallbacks;
+  if (!Array.isArray(payloadFallbacks)) {
+    return [];
+  }
+  return payloadFallbacks.map((entry) => String(entry ?? "").trim()).filter(Boolean);
+};
+
 const resolvePort = () => {
   const raw = process.env.OPENCLAW_GATEWAY_PORT?.trim() || "18789";
   const parsed = Number.parseInt(raw, 10);
@@ -200,6 +213,62 @@ const writeJsonFile = async (filePath, value) => {
 const writeTextFile = async (filePath, value) => {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, value, "utf8");
+};
+
+const upsertManagedTextBlock = async (params) => {
+  const { filePath, startMarker, endMarker, block } = params;
+  let existing = "";
+  try {
+    existing = await fs.readFile(filePath, "utf8");
+  } catch (error) {
+    const code = error && typeof error === "object" ? error.code : "";
+    if (code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  const start = existing.indexOf(startMarker);
+  const end = existing.indexOf(endMarker);
+  let next = existing;
+
+  if (start !== -1 && end !== -1 && end > start) {
+    const afterEnd = end + endMarker.length;
+    const tail = existing.slice(afterEnd).replace(/^\n+/, "");
+    const head = existing.slice(0, start).replace(/\n*$/, "\n\n");
+    next = `${head}${block}\n${tail}`.replace(/\n{3,}/g, "\n\n");
+  } else if (existing.trim().length === 0) {
+    next = `${block}\n`;
+  } else {
+    next = `${existing.replace(/\n*$/, "\n\n")}${block}\n`;
+  }
+
+  await writeTextFile(filePath, next);
+};
+
+const writeManagedCodexMcpConfig = async () => {
+  const block = [
+    "# BEGIN OPENCLAW MANAGED MCP SERVERS",
+    "[mcp_servers.playwright]",
+    'command = "playwright-mcp"',
+    "",
+    '[mcp_servers."native-devtools"]',
+    'command = "native-devtools-mcp"',
+    "",
+    "[mcp_servers.context7]",
+    'command = "context7-mcp"',
+    "",
+    "[mcp_servers.github]",
+    'url = "https://api.githubcopilot.com/mcp/"',
+    'bearer_token_env_var = "GITHUB_TOKEN"',
+    "# END OPENCLAW MANAGED MCP SERVERS",
+  ].join("\n");
+
+  await upsertManagedTextBlock({
+    filePath: CODEX_CONFIG_PATH,
+    startMarker: "# BEGIN OPENCLAW MANAGED MCP SERVERS",
+    endMarker: "# END OPENCLAW MANAGED MCP SERVERS",
+    block,
+  });
 };
 
 const writeWorkspaceDocFromEnv = async (envName, filePath) => {
@@ -367,6 +436,13 @@ const bootstrap = async () => {
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim() || "";
 
   const modelRef = resolveModelRef(payload);
+  const modelFallbacks = resolveModelFallbacks(payload);
+  const modelSelection = modelRef
+    ? {
+        primary: modelRef,
+        ...(modelFallbacks.length > 0 ? { fallbacks: modelFallbacks } : {}),
+      }
+    : undefined;
   const bindMode = normalizeBindMode(process.env.OPENCLAW_GATEWAY_BIND);
   const port = resolvePort();
   const allowTools = parseCsv(process.env.OPENCLAW_ALLOW_TOOLS);
@@ -397,7 +473,7 @@ const bootstrap = async () => {
     agents: {
       defaults: {
         workspace: WORKSPACE_DIR,
-        ...(modelRef ? { model: modelRef } : {}),
+        ...(modelSelection ? { model: modelSelection } : {}),
       },
       list: [
         {
@@ -406,7 +482,7 @@ const bootstrap = async () => {
           name: AGENT_NAME,
           workspace: WORKSPACE_DIR,
           agentDir: AGENT_DIR,
-          ...(modelRef ? { model: modelRef } : {}),
+          ...(modelSelection ? { model: modelSelection } : {}),
         },
       ],
     },
@@ -458,6 +534,7 @@ const bootstrap = async () => {
     "",
   ].join("\n");
   await writeTextFile(IDENTITY_PATH, identityDoc ? `${identityDoc}\n` : defaultIdentity);
+  await writeManagedCodexMcpConfig();
 
   const existingAuthProfiles = normalizeObjectRecord(await parseConfigFile(AUTH_PROFILES_PATH));
   let nextAuthProfiles = existingAuthProfiles;

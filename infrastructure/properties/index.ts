@@ -9,6 +9,7 @@ export interface AgentRuntimeConfig {
 export interface AgentModelConfig {
   provider: string;
   model: string;
+  fallbacks?: string[];
 }
 
 export interface AgentSecretsConfig {
@@ -134,6 +135,9 @@ const agentPromptPaths = (agentId: string) => ({
 });
 
 const defaultAgentDefaults = {
+  model: {
+    fallbacks: ["google/gemini-2.5-flash"],
+  },
   compaction: {
     mode: "safeguard",
     reserveTokensFloor: 24000,
@@ -283,6 +287,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-opus-4-5",
+        fallbacks: ["google/gemini-2.5-flash"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -310,6 +315,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-opus-4-5",
+        fallbacks: ["google/gemini-2.5-flash"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -335,8 +341,9 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "openai-codex",
-        model: "gpt-5.3-codex",
+        provider: "anthropic",
+        model: "claude-opus-4-5",
+        fallbacks: ["google/gemini-2.5-flash"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -348,7 +355,7 @@ export const project: Project = {
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
         directEnvKeys: buildDirectEnvKeys({
-          provider: "openai-codex",
+          provider: "anthropic",
         }),
       },
     },
@@ -364,6 +371,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-sonnet-4-5",
+        fallbacks: ["google/gemini-2.5-flash"],
       },
       openclaw: {
         ...sharedPromptDocs,

@@ -5,7 +5,7 @@
     "openclaw": "bin/openclaw.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b --clean && tsc",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk"

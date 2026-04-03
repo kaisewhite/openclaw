@@ -16,10 +16,14 @@
 - In Slack follow-ups, use plain agent IDs or a known real Slack `<@U...>` token only.
 - If the same violation persists on the next PM cycle without a ticket mutation or new evidence, post one escalation in Slack and one Linear comment naming the stale owner, missing artifact, and deadline for correction.
 - If the same violation persists through a third PM cycle, take coordination action now instead of asking Kaise for routine intervention:
-  - reassign the ticket to the obvious next owner when the current owner or state is clearly wrong
+  - reassign the ticket to the obvious next owner only when the ticket already has an assigned owner and the current owner or state is clearly wrong
   - if the next owner is not obvious, assign `pm-agent@mostrom.io` for coordination triage and state the exact routing decision still required
   - for stale QA validation, move the ticket out of `In Review` now; do not leave it assigned to `qa-agent@mostrom.io` without a verdict
   - for stale architect final review, move the ticket out of `Ready for PR` only if the correct next owner is obvious from the recorded evidence
+- For unassigned tickets:
+  - do not auto-assign during heartbeat
+  - post one explicit routing-gap escalation in Slack and one Linear comment naming the required owner
+  - leave assignee unchanged unless Kaise explicitly instructs assignment
 - For QA-specific stale signals, do not wait for broad inactivity only:
   - if QA spec is assigned on `Planned` but no test design artifact lands within 20 minutes, require the test design or blocker now
   - if QA validation says the review is complete or nearly complete but no verdict lands within 10 minutes, treat that as stale immediately

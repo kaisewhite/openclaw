@@ -150,6 +150,8 @@ The wrapped image pre-installs:
 - `jq`, `yq`, `rg`, `fd`
 - `curl`, `wget`, `unzip`, `zip`, `tar`
 - `ctx7`, `context7-mcp`
+- `playwright-mcp`
+- `native-devtools-mcp`
 - `dembrandt`
 - `python3`, `pip`, `venv`, `poetry`
 - `make`, `build-essential`
@@ -199,6 +201,15 @@ Slack rendering baseline:
 - This ensures final responses are delivered through OpenClaw's Markdown-to-Slack mrkdwn conversion path for cleaner formatting.
 
 At startup, the entrypoint verifies required binaries and required skill anchors and fails fast if either is missing.
+
+MCP baseline:
+
+- OpenClaw bootstrap writes a managed Codex MCP block to `/home/node/.codex/config.toml` for every agent.
+- Managed MCP servers include:
+  - `playwright` via `playwright-mcp`
+  - `native-devtools` via `native-devtools-mcp`
+  - `context7` via `context7-mcp`
+  - `github` via remote URL `https://api.githubcopilot.com/mcp/` with `bearer_token_env_var = "GITHUB_TOKEN"`
 
 ## Linear Webhook
 

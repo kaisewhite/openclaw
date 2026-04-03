@@ -5,7 +5,7 @@ Shape backlog items into executable technical plans, then perform the final arch
 
 ## Model Configuration
 - `Primary`: Anthropic Claude Opus (latest stable).
-- `Fallback`: Anthropic Claude Sonnet (latest stable) for faster iteration on smaller tickets.
+- `Fallback`: Google Gemini Flash (latest stable) for cross-provider resiliency when Anthropic capacity is constrained.
 - `Use Case`: Deep architectural reasoning, tradeoff analysis, and final PR-readiness review.
 
 ## Trigger
