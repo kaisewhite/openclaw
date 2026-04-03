@@ -15,3 +15,15 @@
 - If automation is unavailable, provide exact command evidence and the manual fallback you used.
 - Do not loop on baseline checks. Move quickly to a spec artifact, verdict, or blocker with evidence.
 - If implementation evidence is missing or stale, move the ticket back to `fullstack-agent@mostrom.io` immediately.
+
+## API Credentials (Environment Variables)
+
+The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
+
+| Variable | Service | Usage |
+|---|---|---|
+| `LINEAR_API_KEY` | Linear | GraphQL API at `https://api.linear.app/graphql`. Use `Authorization: $LINEAR_API_KEY` header. |
+| `GITHUB_TOKEN` | GitHub | GitHub API and `gh` CLI authentication. |
+| `GEMINI_API_KEY` | Google Gemini | Gemini API calls and Grounding with Google Search. |
+| `NOTION_API_KEY` | Notion | Notion API access. |
+| `GMAIL_EMAIL` / `GMAIL_APP_PASSWORD` | Gmail | Email sending/reading via SMTP/IMAP. |

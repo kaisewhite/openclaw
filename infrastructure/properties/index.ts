@@ -136,7 +136,7 @@ const agentPromptPaths = (agentId: string) => ({
 
 const defaultAgentDefaults = {
   model: {
-    fallbacks: ["google/gemini-2.5-flash"],
+    fallbacks: ["google/gemini-3-flash-preview"],
   },
   compaction: {
     mode: "safeguard",
@@ -287,7 +287,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-2.5-flash"],
+        fallbacks: ["google/gemini-3-flash-preview"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -315,7 +315,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-2.5-flash"],
+        fallbacks: ["google/gemini-3-flash-preview"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -343,7 +343,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-2.5-flash"],
+        fallbacks: ["google/gemini-3-flash-preview"],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -371,7 +371,7 @@ export const project: Project = {
       model: {
         provider: "anthropic",
         model: "claude-sonnet-4-5",
-        fallbacks: ["google/gemini-2.5-flash"],
+        fallbacks: ["google/gemini-3-flash-preview"],
       },
       openclaw: {
         ...sharedPromptDocs,
