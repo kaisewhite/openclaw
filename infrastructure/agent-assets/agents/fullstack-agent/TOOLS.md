@@ -19,6 +19,10 @@
 
 The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
 
+- Before stating credentials are missing, run:
+  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
+  - If present, proceed with those credentials and never ask Kaise to supply them again.
+
 | Variable | Service | Usage |
 |---|---|---|
 | `LINEAR_API_KEY` | Linear | GraphQL API at `https://api.linear.app/graphql`. Use `Authorization: $LINEAR_API_KEY` header. |
