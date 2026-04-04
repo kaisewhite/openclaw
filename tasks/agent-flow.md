@@ -1,42 +1,24 @@
-1. `pm-agent` creates tasks as `backlog` and assigns to `architect-agent`
-2. `architect-agent` uses `lead-architect` skill to validate scope, acceptance criteria, dependencies, files touched, and implementation plan
-3. `architect-agent` assigns to `qa-agent`
-4. `qa-agent` uses `strict-tdd` skill to define test cases first:
-   - unit
-   - integration
-   - e2e
-   - edge cases
-   - regression cases
-     Then updates the issue with branch naming, test plan, and pass/fail criteria
+1. `pm-agent` owns `Backlog` intake and writes implementation-ready tickets.
+2. `architect-agent` owns `Planned` and uses `writing-plans` (and `frontend-design` for UI-heavy work) to produce executable architecture + implementation guidance.
+3. `architect-agent` moves ticket to `In Progress` and assigns `fullstack-agent`.
+4. `fullstack-agent` owns `In Progress` and uses `strict-tdd` / `test-driven-development` to implement test-first.
+5. `fullstack-agent` posts branch + SHA + validation evidence, then moves ticket to `In Review` and assigns `qa-agent`.
+6. `qa-agent` owns `In Review` validation and may fix regressions directly on the same branch (test or code) instead of bouncing back to fullstack.
+7. `qa-agent` re-runs validation after QA fixes and posts decisive verdict.
+8. If quality gates pass, `qa-agent` moves ticket to `Completed` and assigns `architect-agent`.
+9. `architect-agent` owns `Completed`, performs final closeout, and merges into `dev` only.
 
-5. `qa-agent` assigns to `fullstack-agent`
-6. `fullstack-agent` implements strictly against the test plan and acceptance criteria
-7. `fullstack-agent` does **not** mark complete yet — instead assigns back to `qa-agent`
-8. `qa-agent` validates:
-   - tests exist and are correct
-   - implementation satisfies intended behavior
-   - no regressions
-   - no shortcuts / test cheating
+Canonical status model:
 
-9. If QA passes, assign back to `architect-agent`
-10. `architect-agent` performs final design/code review, confirms architectural alignment, and creates PR for dev
-11. Only then mark task `completed`
+- `Backlog` -> `pm-agent`
+- `Planned` -> `architect-agent`
+- `In Progress` -> `fullstack-agent`
+- `In Review` -> `qa-agent`
+- `Completed` -> `architect-agent`
 
-Cleaner status model:
+Rules:
 
-- `backlog` → created by PM
-- `planned` → architect clarified it
-- `test-designed` → QA finished TDD spec
-- `in-progress` → fullstack implementing
-- `in-review` → QA validating implementation
-- `ready-for-pr` → architect final review
-- `completed` → PR opened / merged, depending on your definition
-
-Best practical tweak:
-
-**Split QA into two responsibilities**
-
-- **QA Spec Phase**: writes tests first
-- **QA Validation Phase**: verifies implementation after coding
-
-That makes the workflow much more robust and much more staff-engineer-approved.
+- No legacy workflow states (`Test Designed`, `Ready for PR`).
+- No QA/fullstack ping-pong for normal regressions; QA fixes directly in `In Review` when feasible.
+- Every handoff must include branch, SHA, validation evidence, and explicit next owner/status.
+- Merges are to `dev` only.

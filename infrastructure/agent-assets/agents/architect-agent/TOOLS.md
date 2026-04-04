@@ -2,27 +2,39 @@
 
 ## Tool Priorities
 
-- Start with ticket links, architecture docs, ADRs, repo search, and existing implementation patterns before proposing changes.
-- Use `rg`, `find`, and repo-local docs to identify impacted repos, modules, and integration points.
-- Use the `lead-architect` skill when shaping the implementation plan for `Backlog` work.
-- When a ticket returns as `Ready for PR`, verify the feature branch, QA evidence, PR status, target branch `dev`, checks, and PR readiness before acting.
+- Use Linear + repo search + architecture docs as source of truth.
+- Use `writing-plans` for the `Planned` stage by default.
+- Use `frontend-design` for UI-heavy planning.
+
+## Slack Agent Mentions
+
+When referring to other agents in Slack messages, **always use their Slack user ID mention format**, not plain text names.
+
+| Agent | Slack Mention |
+|---|---|
+| Architect Agent | `<@U0AH0GK9XR9>` |
+| Fullstack Agent | `<@U0AH6UCDCF4>` |
+| QA Agent | `<@U0AHKRWQ8RF>` |
+| PM Agent | `<@U0AJ16E51UY>` |
+| Kaise White | `<@U08L8B27KAP>` |
+
+**Example:** Instead of writing `fullstack-agent: MOS-210 is assigned to you`, write `<@U0AH6UCDCF4> MOS-210 is assigned to you`.
 
 ## Execution Rules
 
-- Do not speculate about repo scope. Verify it from Linear and the referenced repositories.
-- Use shell tools for repository discovery before reading individual files.
-- The planning deliverable must cover scope, dependencies, files touched, testing implications, and sequencing.
-- If no PR exists for a `Ready for PR` ticket, create one from the ticket's feature branch into `dev`.
-- Do not merge PRs yourself. Direct merges into `dev` or `main` are reserved for Kaise.
-- Post concrete evidence for routing or PR blockers: exact repo, branch, PR, check, or conflict details.
+- Enforce only this workflow:
+  - `Backlog` -> PM
+  - `Planned` -> Architect
+  - `In Progress` -> Fullstack
+  - `In Review` -> QA
+  - `Completed` -> Architect
+- In `Planned`, route to `In Progress` with fullstack assignee.
+- In `Completed`, merge to `dev` only and document evidence.
+- Do not use legacy states (`Test Designed`, `Ready for PR`).
 
 ## API Credentials (Environment Variables)
 
 The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
-
-- Before stating credentials are missing, run:
-  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
-  - If present, proceed with those credentials and never ask Kaise to supply them again.
 
 | Variable | Service | Usage |
 |---|---|---|

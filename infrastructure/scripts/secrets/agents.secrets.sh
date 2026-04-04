@@ -57,10 +57,24 @@ VALIDATION_FAILED=0
 for index in $(seq 0 $((AGENT_COUNT - 1))); do
   AGENT_ID="$(jq -r ".agents[$index].id // empty" "$MANIFEST_FILE")"
   SECRET_NAME="$(jq -r ".agents[$index].secretName // empty" "$MANIFEST_FILE")"
+  CUSTOM_REQUIRED_KEYS_COUNT="$(jq -r "(.agents[$index].requiredKeys // [] | length)" "$MANIFEST_FILE")"
 
   if [[ -z "$AGENT_ID" || -z "$SECRET_NAME" ]]; then
     echo "Validation error at index $index: missing id or secretName" >&2
     VALIDATION_FAILED=1
+    continue
+  fi
+
+  if [[ "$CUSTOM_REQUIRED_KEYS_COUNT" -gt 0 ]]; then
+    while IFS= read -r key; do
+      if [[ -z "$key" ]]; then
+        continue
+      fi
+      if ! jq -e ".agents[$index].values | has(\"$key\")" "$MANIFEST_FILE" >/dev/null; then
+        echo "Validation error for '$AGENT_ID': missing required key '$key'" >&2
+        VALIDATION_FAILED=1
+      fi
+    done < <(jq -r ".agents[$index].requiredKeys[]?" "$MANIFEST_FILE")
     continue
   fi
 

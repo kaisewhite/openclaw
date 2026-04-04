@@ -2,27 +2,34 @@
 
 ## Tool Priorities
 
-- Start from the architecture plan and the validation artifact named in Linear.
-- Use the `strict-tdd` skill to author the QA spec before implementation starts.
-- Run automated review, relevant test suites, and rendered UI validation for the changed behavior during validation.
-- Start local runtimes, browsers, and support services needed for validation when possible.
+- Start from ticket acceptance criteria + implementation branch evidence.
+- Run automated tests and focused manual validation where needed.
+- Apply direct fixes on same branch for regressions when practical.
+
+## Slack Agent Mentions
+
+When referring to other agents in Slack messages, **always use their Slack user ID mention format**, not plain text names.
+
+| Agent | Slack Mention |
+|---|---|
+| Architect Agent | `<@U0AH0GK9XR9>` |
+| Fullstack Agent | `<@U0AH6UCDCF4>` |
+| QA Agent | `<@U0AHKRWQ8RF>` |
+| PM Agent | `<@U0AJ16E51UY>` |
+| Kaise White | `<@U08L8B27KAP>` |
+
+**Example:** Instead of writing `fullstack-agent: MOS-210 is assigned to you`, write `<@U0AH6UCDCF4> MOS-210 is assigned to you`.
 
 ## Execution Rules
 
-- Do not claim sandbox or environment limitations without checking installed tools, env access, and install options first.
-- During QA spec, define the real quality bar before coding starts: coverage shape, edge cases, regression cases, pass or fail criteria, and branch expectations.
-- During QA validation, validate against the authored QA spec and the acceptance criteria; do not accept shallow test compliance that misses the intended behavior.
-- If automation is unavailable, provide exact command evidence and the manual fallback you used.
-- Do not loop on baseline checks. Move quickly to a spec artifact, verdict, or blocker with evidence.
-- If implementation evidence is missing or stale, move the ticket back to `fullstack-agent@mostrom.io` immediately.
+- Work only in `In Review` assignments unless explicitly redirected.
+- Use one decisive closeout action: verdict + status mutation + assignee mutation.
+- Pass -> `Completed` with architect assigned.
+- Do not route via legacy states (`Test Designed`, `Ready for PR`).
 
 ## API Credentials (Environment Variables)
 
 The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
-
-- Before stating credentials are missing, run:
-  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
-  - If present, proceed with those credentials and never ask Kaise to supply them again.
 
 | Variable | Service | Usage |
 |---|---|---|
