@@ -49,5 +49,30 @@ The following API keys are available as environment variables in this container.
 | `LINEAR_API_KEY` | Linear | GraphQL API at `https://api.linear.app/graphql`. |
 | `GITHUB_TOKEN` | GitHub | GitHub API and `gh` CLI authentication. |
 | `GEMINI_API_KEY` | Google Gemini | Gemini API calls and search grounding. |
+| `ANTHROPIC_API_KEY` | Anthropic Claude | Fallback model API calls. |
 | `NOTION_API_KEY` | Notion | Notion API access. |
 | `GMAIL_EMAIL` / `GMAIL_APP_PASSWORD` | Gmail | Email sending/reading via SMTP/IMAP. |
+
+## AWS Access Rules (Required)
+
+- Agents are expected to read AWS resources in the dev account by assuming:
+  - `arn:aws:iam::896502667345:role/cross-account-developer`
+- Do not claim AWS connectivity or IAM blockers before running the diagnostics below.
+- Never label an issue as "VPC/network" without command evidence.
+
+### Required Diagnostics Sequence
+
+1. Verify base identity:
+   - `aws sts get-caller-identity --region us-east-1 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
+2. Verify cross-account role assumption:
+   - `aws sts assume-role --role-arn arn:aws:iam::896502667345:role/cross-account-developer --role-session-name pm-diag --region us-east-1 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
+3. Run target read using assumed-role profile:
+   - `AWS_PROFILE=cross-account-developer AWS_REGION=us-east-1 aws secretsmanager list-secrets --max-results 5 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
+
+### Blocker Reporting Standard
+
+- If blocked, include:
+  - exact command
+  - exit code
+  - last 30 lines of stderr/stdout
+- Do not hand-wave with "hangs indefinitely" without timeout-bounded evidence.

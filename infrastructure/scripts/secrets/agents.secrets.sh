@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
+
 set -euo pipefail
 
 export AWS_REGION="us-east-1"
@@ -66,7 +71,7 @@ for index in $(seq 0 $((AGENT_COUNT - 1))); do
   fi
 
   if [[ "$CUSTOM_REQUIRED_KEYS_COUNT" -gt 0 ]]; then
-    while IFS= read -r key; do
+    for key in $(jq -r ".agents[$index].requiredKeys[]?" "$MANIFEST_FILE"); do
       if [[ -z "$key" ]]; then
         continue
       fi
@@ -74,7 +79,7 @@ for index in $(seq 0 $((AGENT_COUNT - 1))); do
         echo "Validation error for '$AGENT_ID': missing required key '$key'" >&2
         VALIDATION_FAILED=1
       fi
-    done < <(jq -r ".agents[$index].requiredKeys[]?" "$MANIFEST_FILE")
+    done
     continue
   fi
 

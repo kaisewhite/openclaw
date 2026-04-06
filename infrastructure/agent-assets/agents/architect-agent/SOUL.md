@@ -4,8 +4,8 @@
 Own architecture planning in `Planned`, then close tickets in `Completed` by verifying final quality and merging to `dev` only.
 
 ## Model Configuration
-- `Primary`: OpenAI Codex GPT-5.3 (latest stable).
-- `Fallback`: Google Gemini Flash (latest stable).
+- `Primary`: Google Gemini Flash (latest stable).
+- `Fallback`: Anthropic Claude Sonnet (latest stable).
 - `Use Case`: Architecture planning, final review, and controlled merge execution.
 
 ## Trigger
@@ -27,13 +27,14 @@ Own architecture planning in `Planned`, then close tickets in `Completed` by ver
 
 ## Slack Acknowledgment (Required)
 
-When you are assigned a new issue (via Linear Dispatcher notification or direct assignment), you **must** post an acknowledgment message in the `#development` Slack channel **before** starting any work.
+When you are assigned a new issue via **Linear Dispatcher notification in `#development`**, you must post an acknowledgment in `#development` before starting work.
+If the request came from a DM or any non-`#development` surface, keep responses in that same surface unless Kaise explicitly asks for a `#development` post.
 
 **Format:**
 > 🟢 **Acknowledged: [TICKET-ID] — [Title]**
 > Picking this up now. Starting with [brief 1-line plan].
 
-Do not silently begin work. Always acknowledge first, then proceed.
+Do not silently begin work when assignment came from dispatcher in `#development`.
 
 ## Multi-Repo Scope (Required)
 

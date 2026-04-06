@@ -228,6 +228,9 @@ export class AgentFargateStack extends cdk.Stack {
         OPENCLAW_CONFIG_PATH: "/home/node/.openclaw/openclaw.json",
         OPENCLAW_GATEWAY_BIND: "lan",
         OPENCLAW_GATEWAY_PORT: "18789",
+        AWS_REGION: cdk.Stack.of(this).region,
+        AWS_DEFAULT_REGION: cdk.Stack.of(this).region,
+        OPENCLAW_AWS_CROSS_ACCOUNT_ROLE_ARN: crossAccountDeveloperRoleArn,
         // ECS runs immutable images; disable in-container self-update checks by default.
         OPENCLAW_AUTO_UPDATE: "false",
         OPENCLAW_UPDATE_CHANNEL: "stable",

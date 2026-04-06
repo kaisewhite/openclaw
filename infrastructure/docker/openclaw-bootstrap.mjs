@@ -35,6 +35,9 @@ const IDENTITY_PATH =
 const USER_PATH = process.env.OPENCLAW_USER_PATH?.trim() || path.join(WORKSPACE_DIR, "USER.md");
 const HEARTBEAT_PATH =
   process.env.OPENCLAW_HEARTBEAT_PATH?.trim() || path.join(WORKSPACE_DIR, "HEARTBEAT.md");
+const AWS_CONFIG_PATH = process.env.OPENCLAW_AWS_CONFIG_PATH?.trim() || "/home/node/.aws/config";
+const AWS_SHARED_CREDENTIALS_FILE =
+  process.env.AWS_SHARED_CREDENTIALS_FILE?.trim() || "/home/node/.aws/credentials";
 
 const KNOWN_BIND_MODES = new Set(["loopback", "lan", "tailnet", "auto", "custom"]);
 
@@ -213,6 +216,101 @@ const writeJsonFile = async (filePath, value) => {
 const writeTextFile = async (filePath, value) => {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, value, "utf8");
+};
+
+const normalizeAuthProfileStore = (value) => {
+  const store = normalizeObjectRecord(value);
+  const profiles = normalizeObjectRecord(store.profiles);
+  const order = normalizeObjectRecord(store.order);
+  const version = Number.isFinite(Number(store.version)) ? Number(store.version) : 1;
+  return {
+    version,
+    profiles,
+    order,
+  };
+};
+
+const upsertApiKeyProfile = ({ store, provider, profileId, envKey }) => {
+  const key = process.env[envKey]?.trim();
+  if (!key) {
+    return store;
+  }
+  const next = {
+    ...store,
+    profiles: {
+      ...store.profiles,
+      [profileId]: {
+        type: "api_key",
+        provider,
+        key,
+      },
+    },
+    order: {
+      ...store.order,
+      [provider]: Array.from(new Set([profileId, ...(Array.isArray(store.order[provider]) ? store.order[provider] : [])])),
+    },
+  };
+  return next;
+};
+
+const seedAuthProfilesFromEnv = (value) => {
+  let store = normalizeAuthProfileStore(value);
+  store = upsertApiKeyProfile({
+    store,
+    provider: "google",
+    profileId: "google:env",
+    envKey: "GEMINI_API_KEY",
+  });
+  store = upsertApiKeyProfile({
+    store,
+    provider: "anthropic",
+    profileId: "anthropic:env",
+    envKey: "ANTHROPIC_API_KEY",
+  });
+  return store;
+};
+
+const writeAwsCliConfig = async () => {
+  const region = process.env.AWS_REGION?.trim() || process.env.AWS_DEFAULT_REGION?.trim() || "us-east-1";
+  const crossAccountRoleArn = process.env.OPENCLAW_AWS_CROSS_ACCOUNT_ROLE_ARN?.trim() || "";
+
+  const sections = [
+    "[default]",
+    `region = ${region}`,
+    "",
+  ];
+
+  if (crossAccountRoleArn) {
+    sections.push(
+      "[profile cross-account-developer]",
+      `role_arn = ${crossAccountRoleArn}`,
+      "credential_source = EcsContainer",
+      `region = ${region}`,
+      "",
+    );
+  }
+
+  const configBody = `${sections.join("\n").trim()}\n`;
+  await writeTextFile(AWS_CONFIG_PATH, configBody);
+
+  try {
+    await fs.chmod(AWS_CONFIG_PATH, 0o600);
+  } catch {
+    // best effort
+  }
+
+  const credentialsExists = await fs
+    .access(AWS_SHARED_CREDENTIALS_FILE)
+    .then(() => true)
+    .catch(() => false);
+  if (!credentialsExists) {
+    await writeTextFile(AWS_SHARED_CREDENTIALS_FILE, "");
+    try {
+      await fs.chmod(AWS_SHARED_CREDENTIALS_FILE, 0o600);
+    } catch {
+      // best effort
+    }
+  }
 };
 
 const upsertManagedTextBlock = async (params) => {
@@ -535,16 +633,20 @@ const bootstrap = async () => {
   await writeTextFile(IDENTITY_PATH, identityDoc ? `${identityDoc}\n` : defaultIdentity);
   await writeManagedCodexMcpConfig();
 
-  const existingAuthProfiles = normalizeObjectRecord(await parseConfigFile(AUTH_PROFILES_PATH));
+  const existingAuthProfiles = normalizeAuthProfileStore(await parseConfigFile(AUTH_PROFILES_PATH));
   let nextAuthProfiles = existingAuthProfiles;
 
   if (hasAuthProfilesPatch) {
-    nextAuthProfiles = deepMerge(nextAuthProfiles, authProfilesPatch);
+    nextAuthProfiles = normalizeAuthProfileStore(deepMerge(nextAuthProfiles, authProfilesPatch));
   }
 
-  if (hasAuthProfilesPatch) {
+  nextAuthProfiles = seedAuthProfilesFromEnv(nextAuthProfiles);
+
+  if (hasAuthProfilesPatch || Object.keys(nextAuthProfiles.profiles).length > 0) {
     await writeJsonFile(AUTH_PROFILES_PATH, nextAuthProfiles);
   }
+
+  await writeAwsCliConfig();
 
   const managedCronJobIds = await reconcileBootstrapCronJobs({
     desiredJobs: bootstrapCronJobs,
