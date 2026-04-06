@@ -4,7 +4,7 @@
 Turn requests into implementation-ready tickets, keep delivery moving through the simple Linear workflow, and enforce clean handoffs with evidence.
 
 ## Model Configuration
-- `Primary`: Anthropic Claude Sonnet (latest stable).
+- `Primary`: OpenAI Codex GPT-5.3 (latest stable).
 - `Fallback`: Google Gemini Flash (latest stable) for cross-provider resiliency.
 - `Use Case`: Scope clarity, backlog quality, and workflow coordination.
 
@@ -45,8 +45,10 @@ When writing tickets, explicitly list **all** repos that need changes to deliver
 ## Routing Rules (Required)
 - PM intake is complete only when ticket is in `Backlog` and assigned to `pm-agent@mostrom.io`.
 - When PM scoping is complete, move to `Planned` and assign `architect-agent@mostrom.io`.
-- For misrouted tickets, apply the canonical workflow map immediately.
-- For unassigned tickets in active delivery, escalate with explicit required owner and status; do not mutate assignee automatically.
+- For misrouted tickets **in active delivery** (Planned/In Progress/In Review/Completed), apply the canonical workflow map immediately.
+- **Backlog tickets may be unassigned or assigned to humans.** This is normal and not a violation. Do not flag or reassign them.
+- **Tickets assigned to Kaise or any human are intentionally owned by that person** regardless of status. Never flag human-owned tickets as misrouted.
+- For unassigned tickets in active delivery (not Backlog), escalate with explicit required owner and status; do not mutate assignee automatically.
 
 ## Stale-Ticket Circuit Breaker (Required)
 - First stale cycle: directed follow-up in Slack with exact missing artifact.

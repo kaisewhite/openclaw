@@ -56,6 +56,11 @@ export interface Project {
   agents: Agent[];
 }
 
+const GEMINI_PROVIDER = "google" as const;
+const GEMINI_DEFAULT_MODEL = "gemini-3-flash-preview" as const;
+const ANTHROPIC_PROVIDER = "anthropic" as const;
+const ANTHROPIC_BACKUP_MODEL = "anthropic/claude-3-7-sonnet-latest" as const;
+
 const defaultSlackOverrides = {
   channels: {
     slack: {
@@ -136,7 +141,7 @@ const agentPromptPaths = (agentId: string) => ({
 
 const defaultAgentDefaults = {
   model: {
-    fallbacks: ["google/gemini-3-flash-preview"],
+    fallbacks: [ANTHROPIC_BACKUP_MODEL],
   },
   compaction: {
     mode: "safeguard",
@@ -241,6 +246,7 @@ const pmAgentOpenclawOverrides = {
 } as const;
 
 const directEnvSharedKeys = [
+  "ANTHROPIC_API_KEY",
   "CONTEXT7_API_KEY",
   "GEMINI_API_KEY",
   "GITHUB_TOKEN",
@@ -256,8 +262,8 @@ const directEnvSharedKeys = [
 ] as const;
 
 const directEnvProviderKeys = {
-  anthropic: ["ANTHROPIC_SETUP_TOKEN"],
-  "openai-codex": ["OPENAI_API_KEY"],
+  [GEMINI_PROVIDER]: ["GEMINI_API_KEY"],
+  [ANTHROPIC_PROVIDER]: ["ANTHROPIC_API_KEY"],
 } as const;
 
 type SupportedDirectEnvProvider = keyof typeof directEnvProviderKeys;
@@ -285,9 +291,9 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "anthropic",
-        model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-3-flash-preview"],
+        provider: GEMINI_PROVIDER,
+        model: GEMINI_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -299,7 +305,7 @@ export const project: Project = {
       secrets: {
         secretName: "/openclaw/mgmt/agents/architect-agent",
         directEnvKeys: buildDirectEnvKeys({
-          provider: "anthropic",
+          provider: GEMINI_PROVIDER,
         }),
       },
     },
@@ -313,9 +319,9 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "anthropic",
-        model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-3-flash-preview"],
+        provider: GEMINI_PROVIDER,
+        model: GEMINI_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -327,7 +333,7 @@ export const project: Project = {
       secrets: {
         secretName: "/openclaw/mgmt/agents/fullstack-agent",
         directEnvKeys: buildDirectEnvKeys({
-          provider: "anthropic",
+          provider: GEMINI_PROVIDER,
         }),
       },
     },
@@ -341,9 +347,9 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "anthropic",
-        model: "claude-opus-4-5",
-        fallbacks: ["google/gemini-3-flash-preview"],
+        provider: GEMINI_PROVIDER,
+        model: GEMINI_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -355,7 +361,7 @@ export const project: Project = {
       secrets: {
         secretName: "/openclaw/mgmt/agents/qa-agent",
         directEnvKeys: buildDirectEnvKeys({
-          provider: "anthropic",
+          provider: GEMINI_PROVIDER,
         }),
       },
     },
@@ -369,9 +375,9 @@ export const project: Project = {
         desiredCount: 1,
       },
       model: {
-        provider: "anthropic",
-        model: "claude-sonnet-4-5",
-        fallbacks: ["google/gemini-3-flash-preview"],
+        provider: GEMINI_PROVIDER,
+        model: GEMINI_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
       },
       openclaw: {
         ...sharedPromptDocs,
@@ -383,7 +389,35 @@ export const project: Project = {
       secrets: {
         secretName: "/openclaw/mgmt/agents/pm-agent",
         directEnvKeys: buildDirectEnvKeys({
-          provider: "anthropic",
+          provider: GEMINI_PROVIDER,
+        }),
+      },
+    },
+    {
+      id: "vacation-planner-agent",
+      displayName: "Vacation Planner Agent",
+      description: "WhatsApp vacation planning assistant for Méribel ski trip",
+      runtime: {
+        cpu: 1024,
+        memoryLimitMiB: 2048,
+        desiredCount: 0,
+      },
+      model: {
+        provider: GEMINI_PROVIDER,
+        model: GEMINI_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
+      },
+      openclaw: {
+        ...sharedPromptDocs,
+        ...agentPromptPaths("vacation-planner-agent"),
+        allowTools: ["*"],
+        denyTools: [],
+        configOverrides: defaultOpenclawOverrides,
+      },
+      secrets: {
+        secretName: "/openclaw/mgmt/agents/vacation-planner-agent",
+        directEnvKeys: buildDirectEnvKeys({
+          provider: GEMINI_PROVIDER,
         }),
       },
     },

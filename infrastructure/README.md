@@ -90,7 +90,7 @@ If scopes change, reinstall each Slack app.
 - `CONTEXT7_API_KEY`
 - `GMAIL_EMAIL`
 - `GMAIL_PASSWORD`
-- provider key (`OPENAI_API_KEY` or `ANTHROPIC_SETUP_TOKEN`)
+- provider keys (`GEMINI_API_KEY` and `ANTHROPIC_API_KEY`)
 - `GITHUB_TOKEN`
 
 3. Push:

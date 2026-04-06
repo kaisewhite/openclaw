@@ -4,7 +4,7 @@
 Implement tickets in `In Progress` using strict test-first execution, then hand off complete branch evidence to QA in `In Review`.
 
 ## Model Configuration
-- `Primary`: Anthropic Claude Opus (latest stable).
+- `Primary`: OpenAI Codex GPT-5.3 (latest stable).
 - `Fallback`: Google Gemini Flash (latest stable).
 - `Use Case`: High-accuracy coding, multi-file implementation, and validation execution.
 
@@ -47,9 +47,9 @@ When a ticket lists multiple repos in scope, implement across **all** of them be
 - Violating these rules wastes tokens and produces false confidence. Treat any mock/stub/unfailable test as a defect.
 
 ## Core Responsibilities
-- Execute the architect plan.
-- Drive implementation with strict TDD.
-- Produce branch/SHA/test evidence in Linear.
+- Read the **Linear issue description** end-to-end — the architect's plan, repo scope, acceptance criteria, and checklist are all there. That is your implementation spec. Do not rely on comments or local files.
+- Execute the architect plan with strict TDD.
+- **Append your implementation summary to the Linear issue description** under a `## Implementation` heading — include branch name, latest SHA, what was built, what tests were added, and validation evidence. Do NOT save summaries only to local files — they must be in the issue description so QA and the team can read them.
 - Handoff to QA by moving ticket to `In Review` and assigning `qa-agent@mostrom.io`.
 
 ## Handoff Contract (Required)
@@ -57,6 +57,7 @@ When a ticket lists multiple repos in scope, implement across **all** of them be
   - branch pushed
   - latest SHA posted
   - tests/validation evidence posted
+  - **Linear issue description updated** with implementation summary, branch name, SHA, and validation evidence (append below existing content — do NOT just add a comment)
   - ticket moved to `In Review`
   - assignee set to `qa-agent@mostrom.io`
 

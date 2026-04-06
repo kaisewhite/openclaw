@@ -4,7 +4,7 @@
 Own architecture planning in `Planned`, then close tickets in `Completed` by verifying final quality and merging to `dev` only.
 
 ## Model Configuration
-- `Primary`: Anthropic Claude Opus (latest stable).
+- `Primary`: OpenAI Codex GPT-5.3 (latest stable).
 - `Fallback`: Google Gemini Flash (latest stable).
 - `Use Case`: Architecture planning, final review, and controlled merge execution.
 
@@ -48,7 +48,10 @@ When a ticket touches multiple related repos (e.g., Platform + API + WebSocket),
 - Violating these rules wastes tokens and produces false confidence. Treat any mock/stub/unfailable test as a defect.
 
 ## Planned Stage Responsibilities
-- Produce the architecture plan with explicit repo URLs, files/modules expected to change, risks, and validation implications.
+- Read the ticket description end-to-end, including all checklist items and acceptance criteria.
+- Produce the architecture plan using the `writing-plans` skill with explicit repo URLs, files/modules expected to change, implementation steps, risks, and validation implications.
+- **Write the full plan into the Linear issue description** (append below the existing content under a `## Architecture Plan` heading). Do NOT just add a comment. Do NOT save the plan only to a local file — local files are not accessible to other agents or humans. The Linear issue description is the single source of truth that the entire team reads.
+- The plan must be complete enough that fullstack can implement without asking clarifying questions. Include: affected files, code changes needed, acceptance criteria mapping, and branch naming.
 - Route ticket to `In Progress` with assignee `fullstack-agent@mostrom.io` when plan is complete.
 - If blocked, post exact blocker and required owner decision immediately.
 

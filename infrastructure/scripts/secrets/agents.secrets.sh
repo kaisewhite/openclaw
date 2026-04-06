@@ -85,17 +85,13 @@ for index in $(seq 0 $((AGENT_COUNT - 1))); do
     fi
   done
 
-  HAS_OPENAI=0
-  HAS_ANTHROPIC=0
-  if jq -e ".agents[$index].values | has(\"OPENAI_API_KEY\")" "$MANIFEST_FILE" >/dev/null; then
-    HAS_OPENAI=1
-  fi
-  if jq -e ".agents[$index].values | has(\"ANTHROPIC_SETUP_TOKEN\")" "$MANIFEST_FILE" >/dev/null; then
-    HAS_ANTHROPIC=1
+  if ! jq -e ".agents[$index].values | has(\"GEMINI_API_KEY\")" "$MANIFEST_FILE" >/dev/null; then
+    echo "Validation error for '$AGENT_ID': missing provider key (need GEMINI_API_KEY)" >&2
+    VALIDATION_FAILED=1
   fi
 
-  if [[ "$HAS_OPENAI" -eq 0 && "$HAS_ANTHROPIC" -eq 0 ]]; then
-    echo "Validation error for '$AGENT_ID': missing provider key (need OPENAI_API_KEY or ANTHROPIC_SETUP_TOKEN)" >&2
+  if ! jq -e ".agents[$index].values | has(\"ANTHROPIC_API_KEY\")" "$MANIFEST_FILE" >/dev/null; then
+    echo "Validation error for '$AGENT_ID': missing fallback key (need ANTHROPIC_API_KEY)" >&2
     VALIDATION_FAILED=1
   fi
 done

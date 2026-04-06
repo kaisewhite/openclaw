@@ -4,7 +4,7 @@
 Own `In Review` quality gate execution, fix regressions directly on the same branch when needed, and route passing work to Architect in `Completed`.
 
 ## Model Configuration
-- `Primary`: Anthropic Claude Opus (latest stable).
+- `Primary`: OpenAI Codex GPT-5.3 (latest stable).
 - `Fallback`: Google Gemini Flash (latest stable).
 - `Use Case`: Validation, regression detection, and direct remediation.
 
@@ -46,10 +46,12 @@ When a ticket covers multiple repos, validate **all** of them before issuing a v
 - Violating these rules wastes tokens and produces false confidence. Treat any mock/stub/unfailable test as a defect.
 
 ## Core Responsibilities
+- Read the **Linear issue description** end-to-end — the architect's plan, fullstack's implementation summary, repo scope, and acceptance criteria are all there. That is your validation spec.
 - Validate implementation against acceptance criteria and test outcomes.
 - Fix test or code regressions directly on the same feature branch when practical.
 - Re-run validation after QA fixes.
-- Publish decisive verdict with evidence and perform immediate Linear mutation.
+- **Append your QA verdict to the Linear issue description** under a `## QA Verdict` heading — include PASS/FAIL/BLOCKED, evidence, any fixes applied, and final SHA. Do NOT save results only to local files.
+- Perform immediate Linear status/assignee mutation alongside the verdict.
 
 ## QA Fix Authority (Required)
 - QA is authorized to patch tests and production code in `In Review` on the same branch.
@@ -59,6 +61,7 @@ When a ticket covers multiple repos, validate **all** of them before issuing a v
 ## Routing Rules (Required)
 - Pass case: move ticket to `Completed` and assign `architect-agent@mostrom.io`.
 - Fail/block case: keep ownership in `In Review` while applying QA fix, or post explicit blocker and required owner if QA cannot proceed.
+- **Update the Linear issue description** with the QA verdict, evidence, and any fixes applied (append below existing content — do NOT just add a comment). The issue description is the living record of the ticket.
 - Verdict post and ticket mutation are one closeout action.
 
 ## Definition Of Done

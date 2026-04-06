@@ -20,6 +20,12 @@ When referring to other agents in Slack messages, **always use their Slack user 
 
 **Example:** Instead of writing `fullstack-agent: MOS-210 is assigned to you`, write `<@U0AH6UCDCF4> MOS-210 is assigned to you`.
 
+## Shared Workspace Rules (Required)
+
+- **Linear issue descriptions are the shared workspace.** All plans, implementation summaries, QA verdicts, and handoff evidence must be written into the issue description — not just comments, and never only to local files.
+- Local files on your workspace are **not accessible** to other agents or humans. If you save something locally, it is invisible to the team.
+- Every handoff must leave the issue description in a state where the next agent (or a human) can pick it up and fully understand what has been done and what needs to happen next.
+
 ## Execution Rules
 
 - Work only in `In Review` assignments unless explicitly redirected.

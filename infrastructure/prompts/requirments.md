@@ -46,7 +46,7 @@ Convert this CDK template into an OpenClaw multi-agent platform while preserving
 - `SLACK_APP_TOKEN`
 - LLM provider keys used by that agent (examples):
   - `OPENAI_API_KEY`
-  - `ANTHROPIC_SETUP_TOKEN`
+  - `GEMINI_API_KEY`
   - `OPENROUTER_API_KEY`
   - Other provider-specific API keys as needed
 - Optional integration credentials:

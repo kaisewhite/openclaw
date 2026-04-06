@@ -432,7 +432,6 @@ const bootstrap = async () => {
   const authProfilesPatch = normalizeObjectRecord(authProfilesPayload);
   const hasAuthProfilesPatch = Object.keys(authProfilesPatch).length > 0;
   const bootstrapCronJobs = Array.isArray(bootstrapConfig.cronJobs) ? bootstrapConfig.cronJobs : [];
-  const anthropicSetupToken = process.env.ANTHROPIC_SETUP_TOKEN?.trim() || "";
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim() || "";
 
   const modelRef = resolveModelRef(payload);
@@ -543,20 +542,7 @@ const bootstrap = async () => {
     nextAuthProfiles = deepMerge(nextAuthProfiles, authProfilesPatch);
   }
 
-  if (anthropicSetupToken) {
-    const previousDefault = normalizeObjectRecord(nextAuthProfiles["anthropic:default"]);
-    nextAuthProfiles = {
-      ...nextAuthProfiles,
-      "anthropic:default": {
-        ...previousDefault,
-        type: "token",
-        provider: "anthropic",
-        token: anthropicSetupToken,
-      },
-    };
-  }
-
-  if (hasAuthProfilesPatch || anthropicSetupToken) {
+  if (hasAuthProfilesPatch) {
     await writeJsonFile(AUTH_PROFILES_PATH, nextAuthProfiles);
   }
 
