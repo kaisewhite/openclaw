@@ -18,20 +18,10 @@ AGENTS=(
   fullstack-agent
   qa-agent
   pm-agent
-  vacation-planner-agent
 )
 ```
 
 ## 3. Ensure Each Service Has A Running Task
-
-If any service has `desiredCount=0` (for example `vacation-planner-agent`), scale it up first:
-
-```bash
-aws ecs update-service \
-  --cluster "$CLUSTER_NAME" \
-  --service vacation-planner-agent \
-  --desired-count 1
-```
 
 Check running tasks:
 

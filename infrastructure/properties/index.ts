@@ -393,33 +393,5 @@ export const project: Project = {
         }),
       },
     },
-    {
-      id: "vacation-planner-agent",
-      displayName: "Vacation Planner Agent",
-      description: "WhatsApp vacation planning assistant for Méribel ski trip",
-      runtime: {
-        cpu: 1024,
-        memoryLimitMiB: 2048,
-        desiredCount: 0,
-      },
-      model: {
-        provider: GEMINI_PROVIDER,
-        model: GEMINI_DEFAULT_MODEL,
-        fallbacks: [ANTHROPIC_BACKUP_MODEL],
-      },
-      openclaw: {
-        ...sharedPromptDocs,
-        ...agentPromptPaths("vacation-planner-agent"),
-        allowTools: ["*"],
-        denyTools: [],
-        configOverrides: defaultOpenclawOverrides,
-      },
-      secrets: {
-        secretName: "/openclaw/mgmt/agents/vacation-planner-agent",
-        directEnvKeys: buildDirectEnvKeys({
-          provider: GEMINI_PROVIDER,
-        }),
-      },
-    },
   ],
 };
