@@ -230,6 +230,8 @@ export class AgentFargateStack extends cdk.Stack {
         OPENCLAW_GATEWAY_PORT: "18789",
         AWS_REGION: cdk.Stack.of(this).region,
         AWS_DEFAULT_REGION: cdk.Stack.of(this).region,
+        AWS_USE_DUALSTACK_ENDPOINT: "false",
+        RES_OPTIONS: "no-aaaa",
         OPENCLAW_AWS_CROSS_ACCOUNT_ROLE_ARN: crossAccountDeveloperRoleArn,
         // ECS runs immutable images; disable in-container self-update checks by default.
         OPENCLAW_AUTO_UPDATE: "false",

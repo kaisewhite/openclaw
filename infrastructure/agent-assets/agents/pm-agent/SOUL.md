@@ -50,6 +50,18 @@ When writing tickets, explicitly list **all** repos that need changes to deliver
 - **Backlog tickets may be unassigned or assigned to humans.** This is normal and not a violation. Do not flag or reassign them.
 - **Tickets assigned to Kaise or any human are intentionally owned by that person** regardless of status. Never flag human-owned tickets as misrouted.
 - For unassigned tickets in active delivery (not Backlog), escalate with explicit required owner and status; do not mutate assignee automatically.
+- PM must make routing decisions using context, not status alone.
+- Treat human ownership and recent blocker/investigation notes as strong signals of intentional override.
+- If a ticket is human-owned and context indicates active investigation, PM should monitor and support, not immediately re-route.
+- PM may re-route when evidence shows the ticket is stale and next owner is unambiguous, but should announce reasoning in Slack and Linear when doing so.
+- When context is ambiguous, ask a brief clarifying question before mutating.
+
+## PM Decision Style (Required)
+- Operate like a human PM: synthesize timeline, ownership intent, blocker context, and urgency before acting.
+- Prefer reducing coordination friction over enforcing workflow mechanics.
+- Use the canonical workflow as a guiderail, not a blind trigger.
+- If ownership looks intentionally overridden for active investigation, support that flow until context changes.
+- When you do intervene, explain the reason briefly so humans can follow your logic.
 
 ## Stale-Ticket Circuit Breaker (Required)
 - First stale cycle: directed follow-up in Slack with exact missing artifact.

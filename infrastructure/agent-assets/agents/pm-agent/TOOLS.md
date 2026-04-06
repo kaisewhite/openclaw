@@ -36,6 +36,21 @@ When referring to other agents in Slack messages, **always use their Slack user 
 - Do not route through legacy states (`Test Designed`, `Ready for PR`).
 - Do not auto-assign unassigned tickets during stale-ticket sweeps.
 - Require handoff packet evidence on transitions: branch, SHA, tests/evidence, next owner.
+- Use contextual PM judgment before mutating assignments; status alone is insufficient.
+
+## Assignment Decision Lenses
+
+Before changing assignee/status, quickly evaluate:
+
+1. Is the current assignee a human (including Kaise)?
+2. Does the recent issue history include blocker/investigation language?
+3. Was the ticket reassigned within the last few updates by a human or after a blocker?
+4. Is there explicit human instruction in-thread to reassign now?
+
+How to use these signals:
+- Human ownership + active blocker context usually means intentional override; monitor and support.
+- Clear staleness + obvious next owner can justify reassignment.
+- If signals conflict, ask for clarification first.
 
 ## API Credentials (Environment Variables)
 
@@ -55,19 +70,19 @@ The following API keys are available as environment variables in this container.
 
 ## AWS Access Rules (Required)
 
-- Agents are expected to read AWS resources in the dev account by assuming:
-  - `arn:aws:iam::896502667345:role/cross-account-developer`
+- Agents are expected to read AWS resources in the dev account using the configured cross-account access path.
+- Force IPv4 for AWS CLI in this environment:
+  - `export AWS_USE_DUALSTACK_ENDPOINT=false`
+  - `export RES_OPTIONS=no-aaaa`
 - Do not claim AWS connectivity or IAM blockers before running the diagnostics below.
 - Never label an issue as "VPC/network" without command evidence.
 
-### Required Diagnostics Sequence
+### Diagnostics Intent
 
-1. Verify base identity:
-   - `aws sts get-caller-identity --region us-east-1 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
-2. Verify cross-account role assumption:
-   - `aws sts assume-role --role-arn arn:aws:iam::896502667345:role/cross-account-developer --role-session-name pm-diag --region us-east-1 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
-3. Run target read using assumed-role profile:
-   - `AWS_PROFILE=cross-account-developer AWS_REGION=us-east-1 aws secretsmanager list-secrets --max-results 5 --no-cli-pager --cli-connect-timeout 3 --cli-read-timeout 10`
+- Confirm base AWS identity.
+- Confirm cross-account identity/context.
+- Confirm the exact target read operation works in that context.
+- Use short timeouts and no pager so diagnostics are deterministic.
 
 ### Blocker Reporting Standard
 
