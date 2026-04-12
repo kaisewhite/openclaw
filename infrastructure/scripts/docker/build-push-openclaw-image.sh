@@ -54,7 +54,7 @@ docker run --rm \
   --platform "$DOCKER_PLATFORM" \
   --entrypoint /bin/bash \
   "$ECR_IMAGE" \
-  -lc 'for b in bun bunx fd sam poetry lin nodemon chromium dembrandt; do command -v "$b" >/dev/null 2>&1 || { echo "Missing required binary: $b" >&2; exit 1; }; done'
+  -lc 'for b in bun bunx fd sam poetry lin nodemon chromium dembrandt android-studio xvfb-run; do command -v "$b" >/dev/null 2>&1 || { echo "Missing required binary: $b" >&2; exit 1; }; done; test -x /opt/android-studio/bin/studio.sh || { echo "Android Studio launcher is missing or not executable" >&2; exit 1; }; test -x /opt/android-studio/jbr/bin/java || { echo "Android Studio runtime java is missing or not executable" >&2; exit 1; }; /opt/android-studio/jbr/bin/java -version; timeout 20s xvfb-run -a /opt/android-studio/bin/studio.sh >/tmp/android-studio-launch.log 2>&1 || status=$?; test "${status:-0}" = 0 -o "${status:-0}" = 124 || { echo "Android Studio failed to stay alive under Xvfb" >&2; cat /tmp/android-studio-launch.log >&2; exit 1; }; test -d /home/node/Android/Sdk || { echo "Android SDK directory is missing" >&2; exit 1; }'
 
 echo "==> Validating required skills in image"
 docker run --rm \
