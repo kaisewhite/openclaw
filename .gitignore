@@ -9,3 +9,7 @@ AGENTS.md
 infrastructure/agent-assets/credentials/*.credentials.md
 infrastructure/agent-assets/shared/AGENTS.md
 infrastructure/agent-assets/skills/*/AGENTS.md
+
+# Local agents (secrets + machine-specific)
+local-agents/agent-assets/
+local-agents/agents.json
