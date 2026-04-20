@@ -160,6 +160,7 @@ The wrapped image pre-installs:
 - `dig`, `nc`, `lsof`, `ping`
 - `shellcheck`, `yamllint`, `pre-commit`
 - `chromium`
+- `android-studio`
 
 Browser testing baseline:
 
@@ -167,6 +168,15 @@ Browser testing baseline:
 - Override with `OPENCLAW_INSTALL_BROWSER=0` only when you explicitly want a smaller image.
 - The wrapped agent image also installs a system `chromium` binary and the entrypoint fails fast if it is missing, so agents always have a browser on `PATH`.
 - The wrapped agent image also installs `dembrandt@0.6.1` and preloads its Playwright Chromium/Firefox browsers during image build so agents do not need a first-run browser download.
+
+Android tooling baseline:
+
+- Android Studio for Linux is installed at `/opt/android-studio`.
+- Launcher symlink: `/usr/local/bin/android-studio`
+- `ANDROID_HOME` and `ANDROID_SDK_ROOT` default to `/home/node/Android/Sdk`.
+- The image pre-creates the SDK root, but no additional Android SDK packages are preinstalled.
+- This baseline installs Android Studio and validates its headless startup path, but you still need to install Android SDK packages before real Android builds will work.
+- The image validates Android Studio startup under `xvfb-run`, but this install does not by itself provide a full desktop/VNC workflow for interactive GUI use unless you add your own display stack.
 
 Skills baseline:
 

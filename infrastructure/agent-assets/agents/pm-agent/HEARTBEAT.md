@@ -2,8 +2,8 @@
 
 - Only enforce owner/status pairings for tickets that are **actively in flight** (have been assigned and are moving through the pipeline):
   - `Planned` -> `architect-agent@mostrom.io`
-  - `In Progress` -> `fullstack-agent@mostrom.io`
-  - `In Review` -> `qa-agent@mostrom.io`
+  - `In Progress` -> `fullstack-agent@mostrom.io` (default) OR `fullstack-macosx@mostrom.io` (React Native/Electron/Swift app tickets only)
+  - `In Review` -> `qa-agent@mostrom.io` (default) OR `qa-macosx@mostrom.io` (React Native/Electron/Swift app tickets only)
   - `Completed` -> `architect-agent@mostrom.io`
 - **Backlog tickets may be unassigned.** This is normal — they may still be in planning or awaiting scope. Do NOT flag unassigned Backlog tickets as violations. Do NOT try to assign them to PM or anyone else.
 - **Tickets assigned to Kaise (or any human)** are intentionally owned by that person. Do NOT flag them as misrouted. Humans can own tickets in any status.

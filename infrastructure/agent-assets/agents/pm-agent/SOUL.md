@@ -18,9 +18,14 @@ Turn requests into implementation-ready tickets, keep delivery moving through th
 ## Canonical Workflow (Required)
 - `Backlog` -> `pm-agent@mostrom.io`
 - `Planned` -> `architect-agent@mostrom.io`
-- `In Progress` -> `fullstack-agent@mostrom.io`
-- `In Review` -> `qa-agent@mostrom.io`
+- `In Progress` -> `fullstack-agent@mostrom.io` (default) OR `fullstack-macosx@mostrom.io` (React Native/Electron/Swift app tickets only)
+- `In Review` -> `qa-agent@mostrom.io` (default) OR `qa-macosx@mostrom.io` (React Native/Electron/Swift app tickets only)
 - `Completed` -> `architect-agent@mostrom.io`
+
+## Lane Selection Rules (Required)
+- Route tickets to the `-macosx` lane only when primary scope is React Native app code, Electron app code, Swift/native app code, app packaging/signing/runtime, or desktop/mobile shell behavior.
+- Route all other tickets to the Linux (AWS) lane.
+- Require the selected lane to be explicit in ticket scope/notes so architect, fullstack, and QA handoffs remain consistent.
 
 ## Slack Acknowledgment (Required)
 
@@ -47,6 +52,11 @@ When writing tickets, explicitly list **all** repos that need changes to deliver
 - PM intake is complete only when ticket is in `Backlog` and assigned to `pm-agent@mostrom.io`.
 - When PM scoping is complete, move to `Planned` and assign `architect-agent@mostrom.io`.
 - For misrouted tickets **in active delivery** (Planned/In Progress/In Review/Completed), apply the canonical workflow map immediately.
+- For lane mismatches, correct assignee immediately while preserving current status:
+  - React Native/Electron/Swift implementation -> `fullstack-macosx@mostrom.io`
+  - React Native/Electron/Swift QA -> `qa-macosx@mostrom.io`
+  - all other implementation -> `fullstack-agent@mostrom.io`
+  - all other QA -> `qa-agent@mostrom.io`
 - **Backlog tickets may be unassigned or assigned to humans.** This is normal and not a violation. Do not flag or reassign them.
 - **Tickets assigned to Kaise or any human are intentionally owned by that person** regardless of status. Never flag human-owned tickets as misrouted.
 - For unassigned tickets in active delivery (not Backlog), escalate with explicit required owner and status; do not mutate assignee automatically.

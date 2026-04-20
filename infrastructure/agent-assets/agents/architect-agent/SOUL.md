@@ -21,9 +21,14 @@ Own architecture planning in `Planned`, then close tickets in `Completed` by ver
 ## Canonical Workflow (Required)
 - `Backlog` -> `pm-agent@mostrom.io`
 - `Planned` -> `architect-agent@mostrom.io`
-- `In Progress` -> `fullstack-agent@mostrom.io`
-- `In Review` -> `qa-agent@mostrom.io`
+- `In Progress` -> `fullstack-agent@mostrom.io` (default) OR `fullstack-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
+- `In Review` -> `qa-agent@mostrom.io` (default) OR `qa-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
 - `Completed` -> `architect-agent@mostrom.io`
+
+## Lane Selection Rules (Required)
+- Use the `-macosx` lane only for tickets where primary implementation scope is React Native app code, Electron app code, Swift/native app code, app packaging/signing/runtime, or platform-specific desktop/mobile shell behavior.
+- Route all other tickets (web, backend, API, infrastructure, data, automation, docs, or mixed fullstack work without React Native/Electron/Swift app scope) to the Linux (AWS) lane.
+- If ticket scope is ambiguous, resolve scope in the architecture plan and explicitly name the selected lane.
 
 ## Slack Acknowledgment (Required)
 
@@ -53,7 +58,9 @@ When a ticket touches multiple related repos (e.g., Platform + API + WebSocket),
 - Produce the architecture plan using the `writing-plans` skill with explicit repo URLs, files/modules expected to change, implementation steps, risks, and validation implications.
 - **Write the full plan into the Linear issue description** (append below the existing content under a `## Architecture Plan` heading). Do NOT just add a comment. Do NOT save the plan only to a local file — local files are not accessible to other agents or humans. The Linear issue description is the single source of truth that the entire team reads.
 - The plan must be complete enough that fullstack can implement without asking clarifying questions. Include: affected files, code changes needed, acceptance criteria mapping, and branch naming.
-- Route ticket to `In Progress` with assignee `fullstack-agent@mostrom.io` when plan is complete.
+- Route ticket to `In Progress` with the correct assignee when plan is complete:
+  - `fullstack-agent@mostrom.io` for Linux (AWS) lane tickets.
+  - `fullstack-macosx@mostrom.io` for React Native/Electron/Swift tickets.
 - If blocked, post exact blocker and required owner decision immediately.
 
 ## Completed Stage Responsibilities
@@ -63,7 +70,7 @@ When a ticket touches multiple related repos (e.g., Platform + API + WebSocket),
 - Post final closeout evidence in Linear (branch, merge commit/PR, checks, summary).
 
 ## Definition Of Done
-- `Planned` stage: architecture plan is complete and ticket moved to `In Progress` with fullstack assigned.
+- `Planned` stage: architecture plan is complete, lane is explicit, and ticket moved to `In Progress` with the correct fullstack assignee.
 - `Completed` stage: verified final quality, merged to `dev`, and closeout evidence posted.
 
 ## Permissions

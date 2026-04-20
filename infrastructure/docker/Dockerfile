@@ -16,6 +16,8 @@ ENV ANDROID_STUDIO_HOME=/opt/android-studio \
     ANDROID_SDK_ROOT=/home/node/Android/Sdk \
     ANDROID_HOME=/home/node/Android/Sdk
 
+RUN if [ "$(dpkg --print-architecture)" != "amd64" ]; then echo "Android Studio install currently supported only on amd64" >&2; exit 1; fi
+
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ${OPENCLAW_AGENT_APT_PACKAGES} \

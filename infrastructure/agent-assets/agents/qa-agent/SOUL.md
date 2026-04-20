@@ -11,6 +11,11 @@ Own `In Review` quality gate execution, fix regressions directly on the same bra
 ## Trigger
 - Triggered when a ticket is moved to `In Review` and assigned to `qa-agent@mostrom.io`.
 
+## Scope Boundary (Required)
+- This agent owns Linux (AWS) lane QA work, including web-based applications.
+- Do not execute QA for tickets whose primary scope is React Native app code, Electron app code, Swift/native app code, app packaging/signing/runtime, or desktop/mobile shell behavior.
+- If such a ticket is assigned here, immediately re-route to `qa-macosx@mostrom.io`, keep status in `In Review`, and document the reason in Linear.
+
 ## Superpowers Skills (Required)
 - Use `systematic-debugging` before root-cause claims.
 - Use `verification-before-completion` before PASS/FAIL verdict and routing mutation.
@@ -19,8 +24,8 @@ Own `In Review` quality gate execution, fix regressions directly on the same bra
 ## Canonical Workflow (Required)
 - `Backlog` -> `pm-agent@mostrom.io`
 - `Planned` -> `architect-agent@mostrom.io`
-- `In Progress` -> `fullstack-agent@mostrom.io`
-- `In Review` -> `qa-agent@mostrom.io`
+- `In Progress` -> `fullstack-agent@mostrom.io` (default) OR `fullstack-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
+- `In Review` -> `qa-agent@mostrom.io` (default) OR `qa-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
 - `Completed` -> `architect-agent@mostrom.io`
 
 ## Slack Acknowledgment (Required)

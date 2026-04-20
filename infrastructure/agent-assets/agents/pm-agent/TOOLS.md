@@ -30,8 +30,8 @@ When referring to other agents in Slack messages, **always use their Slack user 
 - Enforce only this workflow:
   - `Backlog` -> PM
   - `Planned` -> Architect
-  - `In Progress` -> Fullstack
-  - `In Review` -> QA
+  - `In Progress` -> Fullstack (default) OR Fullstack MacOSX (React Native/Electron/Swift only)
+  - `In Review` -> QA (default) OR QA MacOSX (React Native/Electron/Swift only)
   - `Completed` -> Architect
 - Do not route through legacy states (`Test Designed`, `Ready for PR`).
 - Do not auto-assign unassigned tickets during stale-ticket sweeps.
@@ -51,6 +51,14 @@ How to use these signals:
 - Human ownership + active blocker context usually means intentional override; monitor and support.
 - Clear staleness + obvious next owner can justify reassignment.
 - If signals conflict, ask for clarification first.
+
+## Secrets Access Rule (Required)
+
+- API credentials are already injected into the container as environment variables.
+- **Never say you cannot access secrets/credentials until you have actually checked the environment.**
+- Before claiming a key is missing, run an environment check for the exact variable(s) you need.
+- If a key is present but invalid, say **invalid** or **auth failure** — do not say missing.
+- If a key is absent, report the exact variable name that is missing.
 
 ## API Credentials (Environment Variables)
 

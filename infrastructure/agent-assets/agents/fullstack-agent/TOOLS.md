@@ -28,14 +28,26 @@ When referring to other agents in Slack messages, **always use their Slack user 
 
 ## Execution Rules
 
-- Implement only `In Progress` work assigned to fullstack.
+- Implement only `In Progress` work assigned to `fullstack-agent@mostrom.io` for the Linux (AWS) lane.
+- If ticket scope is primarily React Native/Electron/Swift app work, re-route to `fullstack-macosx@mostrom.io` instead of implementing it in this lane.
 - Handoff packet must include branch, SHA, and validation evidence.
-- Move to `In Review` and assign QA when done.
+- Move to `In Review` and assign `qa-agent@mostrom.io` when done.
 - Architect owns `Completed` and merge to `dev`.
+
+## Secrets Access Rule (Required)
+
+- API credentials are already injected into the container as environment variables.
+- **Never say you cannot access secrets/credentials until you have actually checked the environment.**
+- Before claiming a key is missing, run an environment check for the exact variable(s) you need.
+- If a key is present but invalid, say **invalid** or **auth failure** — do not say missing.
+- If a key is absent, report the exact variable name that is missing.
 
 ## API Credentials (Environment Variables)
 
-The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
+- Before stating credentials are missing, run:
+  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|ANTHROPIC_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
+
+The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them. Before saying anything is missing, check env first.**
 
 | Variable | Service | Usage |
 |---|---|---|

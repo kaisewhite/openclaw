@@ -28,14 +28,26 @@ When referring to other agents in Slack messages, **always use their Slack user 
 
 ## Execution Rules
 
-- Work only in `In Review` assignments unless explicitly redirected.
+- Work only in Linux (AWS) lane `In Review` assignments (`qa-agent@mostrom.io`) unless explicitly redirected.
+- If ticket scope is primarily React Native/Electron/Swift app work, re-route to `qa-macosx@mostrom.io` instead of validating in this lane.
 - Use one decisive closeout action: verdict + status mutation + assignee mutation.
 - Pass -> `Completed` with architect assigned.
 - Do not route via legacy states (`Test Designed`, `Ready for PR`).
 
+## Secrets Access Rule (Required)
+
+- API credentials are already injected into the container as environment variables.
+- **Never say you cannot access secrets/credentials until you have actually checked the environment.**
+- Before claiming a key is missing, run an environment check for the exact variable(s) you need.
+- If a key is present but invalid, say **invalid** or **auth failure** — do not say missing.
+- If a key is absent, report the exact variable name that is missing.
+
 ## API Credentials (Environment Variables)
 
-The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
+- Before stating credentials are missing, run:
+  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|ANTHROPIC_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
+
+The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them. Before saying anything is missing, check env first.**
 
 | Variable | Service | Usage |
 |---|---|---|

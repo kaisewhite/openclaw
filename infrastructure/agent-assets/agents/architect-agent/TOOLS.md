@@ -31,16 +31,27 @@ When referring to other agents in Slack messages, **always use their Slack user 
 - Enforce only this workflow:
   - `Backlog` -> PM
   - `Planned` -> Architect
-  - `In Progress` -> Fullstack
-  - `In Review` -> QA
+  - `In Progress` -> Fullstack (default) OR Fullstack MacOSX (React Native/Electron/Swift only)
+  - `In Review` -> QA (default) OR QA MacOSX (React Native/Electron/Swift only)
   - `Completed` -> Architect
-- In `Planned`, route to `In Progress` with fullstack assignee.
+- In `Planned`, route to `In Progress` with the correct lane assignee (`fullstack-agent@mostrom.io` default, `fullstack-macosx@mostrom.io` for React Native/Electron/Swift).
 - In `Completed`, merge to `dev` only and document evidence.
 - Do not use legacy states (`Test Designed`, `Ready for PR`).
 
+## Secrets Access Rule (Required)
+
+- API credentials are already injected into the container as environment variables.
+- **Never say you cannot access secrets/credentials until you have actually checked the environment.**
+- Before claiming a key is missing, run an environment check for the exact variable(s) you need.
+- If a key is present but invalid, say **invalid** or **auth failure** — do not say missing.
+- If a key is absent, report the exact variable name that is missing.
+
 ## API Credentials (Environment Variables)
 
-The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them.**
+- Before stating credentials are missing, run:
+  - `env | rg '^(LINEAR_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|ANTHROPIC_API_KEY|NOTION_API_KEY|GMAIL_EMAIL|GMAIL_APP_PASSWORD)='`
+
+The following API keys are available as environment variables in this container. **Use them directly — do not ask the user to provide them. Before saying anything is missing, check env first.**
 
 | Variable | Service | Usage |
 |---|---|---|

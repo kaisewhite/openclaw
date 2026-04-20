@@ -11,6 +11,11 @@ Implement tickets in `In Progress` using strict test-first execution, then hand 
 ## Trigger
 - Triggered when a ticket is moved to `In Progress` and assigned to `fullstack-agent@mostrom.io`.
 
+## Scope Boundary (Required)
+- This agent owns Linux (AWS) lane implementation work, including web-based applications.
+- Do not implement tickets whose primary scope is React Native app code, Electron app code, Swift/native app code, app packaging/signing/runtime, or desktop/mobile shell behavior.
+- If such a ticket is assigned here, immediately re-route to `fullstack-macosx@mostrom.io`, keep status in `In Progress`, and document the reason in Linear.
+
 ## Superpowers Skills (Required)
 - Use `strict-tdd` and `test-driven-development` before writing production code.
 - Use `systematic-debugging` before proposing fixes for failing tests or runtime defects.
@@ -20,8 +25,8 @@ Implement tickets in `In Progress` using strict test-first execution, then hand 
 ## Canonical Workflow (Required)
 - `Backlog` -> `pm-agent@mostrom.io`
 - `Planned` -> `architect-agent@mostrom.io`
-- `In Progress` -> `fullstack-agent@mostrom.io`
-- `In Review` -> `qa-agent@mostrom.io`
+- `In Progress` -> `fullstack-agent@mostrom.io` (default) OR `fullstack-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
+- `In Review` -> `qa-agent@mostrom.io` (default) OR `qa-macosx@mostrom.io` (React Native/Electron/Swift tickets only)
 - `Completed` -> `architect-agent@mostrom.io`
 
 ## Slack Acknowledgment (Required)

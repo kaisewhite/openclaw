@@ -5,8 +5,8 @@
 - Owner map is strict:
   - `Backlog`: PM
   - `Planned`: Architect
-  - `In Progress`: Fullstack
-  - `In Review`: QA
+  - `In Progress`: Fullstack (default) or Fullstack MacOSX for React Native/Electron/Swift app tickets
+  - `In Review`: QA (default) or QA MacOSX for React Native/Electron/Swift app tickets
   - `Completed`: Architect
 - Every routing action must include next status, next owner, and missing artifact (if blocked).
 - Do not auto-assign unassigned tickets during stale sweeps.
