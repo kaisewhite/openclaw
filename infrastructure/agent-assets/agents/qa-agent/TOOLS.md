@@ -17,6 +17,8 @@ When referring to other agents in Slack messages, **always use their Slack user 
 | QA Agent | `<@U0AHKRWQ8RF>` |
 | PM Agent | `<@U0AJ16E51UY>` |
 | Kaise White | `<@U08L8B27KAP>` |
+| Fullstack MacOSX | `<@U0ATXD2LPBL>` |
+| QA MacOSX | `<@U0ATU14GKPF>` |
 
 **Example:** Instead of writing `fullstack-agent: MOS-210 is assigned to you`, write `<@U0AH6UCDCF4> MOS-210 is assigned to you`.
 
