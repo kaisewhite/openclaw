@@ -17,3 +17,9 @@ properties/secrets/*.secrets.json
 # Local credential notes/dumps
 prompts/agents/credentials/*.md
 agent-assets/agents/credentials/*.md
+._*
+Icon?
+.AppleDouble
+.Spotlight-V100
+.Trashes
+.fseventsd
