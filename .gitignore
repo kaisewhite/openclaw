@@ -13,6 +13,9 @@ infrastructure/agent-assets/skills/*/AGENTS.md
 # Local agents (secrets + machine-specific)
 local-agents/agent-assets/
 local-agents/agents.json
+
+# Submodule artifact
+openclaw/
 ._*
 .DS_Store
 Icon?
