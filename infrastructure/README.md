@@ -63,7 +63,9 @@ Manifests live in [agent-assets/manifests](./agent-assets/manifests), including:
 
 - `architect-agent.manifest.json`
 - `fullstack-agent.manifest.json`
+- `fullstack-windows.manifest.json`
 - `qa-agent.manifest.json`
+- `qa-windows.manifest.json`
 - `pm-agent.manifest.json`
 - `linear-dispatcher.manifest.json`
 
@@ -130,6 +132,12 @@ Build and push image:
 ```bash
 ./scripts/docker/build-push-openclaw-image.sh
 ```
+
+Windows agent image note:
+
+- `fullstack-windows` and `qa-windows` are configured to use image tag `windows-latest`.
+- Push a Windows container image to the same ECR repo with tag `windows-latest` before deploying those services.
+- Linux build script above produces Linux images only.
 
 Deploy infrastructure:
 
@@ -237,6 +245,12 @@ Use that URL as the webhook target in Linear and set the same webhook secret val
 - Linear issue assignment triggers a Slack mention.
 - Linear comment events do not dispatch to Slack; assigned agents must read Linear issue comments directly before starting and before closeout.
 - `GITHUB_TOKEN` works (`curl https://api.github.com/user` returns `200`).
+- Windows services (`fullstack-windows`, `qa-windows`) have running tasks when enabled.
+- Optional RDP access:
+  - Configure `WINDOWS_AGENT_RDP_ALLOWED_CIDRS` (comma-separated CIDRs) before deploy.
+  - This opens security-group ingress to task port `3389`.
+  - RDP works only if the Windows container image actually runs an RDP-capable service on port `3389`.
+  - ECS Exec remains the default operational access path.
 
 ## Codex OAuth Setup (Any Agent)
 

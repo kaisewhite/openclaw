@@ -1,13 +1,15 @@
 # USER.md - PM Agent
 
-- Keep the workflow simple and strict:
-  - `Backlog -> Planned -> In Progress -> In Review -> Completed`
-- Owner map is strict:
+- Workflow: `Backlog -> Planned -> In Progress -> In Review -> Completed`.
+- PM does not assign/reassign tasks. Kaise assigns tasks.
+- Owner map:
   - `Backlog`: PM
   - `Planned`: Architect
-  - `In Progress`: Fullstack (default) or Fullstack MacOSX for React Native/Electron/Swift app tickets
-  - `In Review`: QA (default) or QA MacOSX for React Native/Electron/Swift app tickets
+  - `In Progress`: Fullstack default, Fullstack MacOSX for RN/Electron/Swift app scope, Fullstack Windows for Windows scope
+  - `In Review`: QA default, QA MacOSX for RN/Electron/Swift app scope, QA Windows for Windows scope
   - `Completed`: Architect
-- Every routing action must include next status, next owner, and missing artifact (if blocked).
-- Do not auto-assign unassigned tickets during stale sweeps.
-- In Slack, use known real Slack `<@U...>` mentions or plain agent IDs only.
+- Ticket must state repo bootstrap by lane:
+  - Mac lane: repo already in `/Volumes/Samsung/repositories`; no clone; `git fetch origin` + `git pull --ff-only`.
+  - Linux lane: clone via `/Volumes/kaisewhite/repositories-folder-tree.md`.
+- PM routing output must include recommended status/owner + missing artifact when blocked.
+- Write recommendation in Linear description/comment. Do not mutate assignee.

@@ -74,22 +74,32 @@ export class AgentFargateStack extends cdk.Stack {
     super(scope, id, props);
 
     const prefix = `${props.environment}-${props.agent.id}`;
-    const crossAccountDeveloperRoleArn = "arn:aws:iam::896502667345:role/cross-account-developer";
+    const crossAccountDeveloperRoleArn = "arn:aws:iam::896502667345:role/CrossAccountReadOnly";
+    const isWindows = props.agent.runtime.osFamily === "windows";
+    const stateDir = isWindows ? "C:\\openclaw" : "/home/node/.openclaw";
+    const configPath = isWindows ? "C:\\openclaw\\openclaw.json" : "/home/node/.openclaw/openclaw.json";
+    const codexConfigPath = isWindows ? "C:\\Users\\ContainerUser\\.codex\\config.toml" : "/home/node/.codex/config.toml";
+    const awsConfigPath = isWindows ? "C:\\Users\\ContainerUser\\.aws\\config" : "/home/node/.aws/config";
+    const awsCredentialsPath = isWindows
+      ? "C:\\Users\\ContainerUser\\.aws\\credentials"
+      : "/home/node/.aws/credentials";
     const secret = secretsmanager.Secret.fromSecretNameV2(this, `${prefix}-secret`, props.agent.secrets.secretName);
     const repository = ecr.Repository.fromRepositoryName(this, `${prefix}-repo`, props.ecrRepositoryName);
 
-    const accessPoint = props.fileSystem.addAccessPoint(`${prefix}-access-point`, {
-      path: `/agents/${props.agent.id}`,
-      createAcl: {
-        ownerGid: "1000",
-        ownerUid: "1000",
-        permissions: "750",
-      },
-      posixUser: {
-        gid: "1000",
-        uid: "1000",
-      },
-    });
+    const accessPoint = isWindows
+      ? undefined
+      : props.fileSystem.addAccessPoint(`${prefix}-access-point`, {
+          path: `/agents/${props.agent.id}`,
+          createAcl: {
+            ownerGid: "1000",
+            ownerUid: "1000",
+            permissions: "750",
+          },
+          posixUser: {
+            gid: "1000",
+            uid: "1000",
+          },
+        });
 
     const executionRole = new iam.Role(this, `${prefix}-execution-role`, {
       assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
@@ -102,19 +112,25 @@ export class AgentFargateStack extends cdk.Stack {
       roleName: `${props.agent.id}-task-role`,
     });
 
-    const efsPolicy = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite", "elasticfilesystem:ClientRootAccess"],
-      resources: [props.fileSystem.fileSystemArn],
-      conditions: {
-        StringEquals: {
-          "elasticfilesystem:AccessPointArn": accessPoint.accessPointArn,
+    if (accessPoint) {
+      const efsPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:ClientRootAccess",
+        ],
+        resources: [props.fileSystem.fileSystemArn],
+        conditions: {
+          StringEquals: {
+            "elasticfilesystem:AccessPointArn": accessPoint.accessPointArn,
+          },
         },
-      },
-    });
+      });
 
-    executionRole.addToPolicy(efsPolicy);
-    taskRole.addToPolicy(efsPolicy);
+      executionRole.addToPolicy(efsPolicy);
+      taskRole.addToPolicy(efsPolicy);
+    }
 
     const scopedSecretReadPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -166,19 +182,27 @@ export class AgentFargateStack extends cdk.Stack {
       family: prefix,
       executionRole,
       taskRole,
-      volumes: [
-        {
-          name: "openclaw-state",
-          efsVolumeConfiguration: {
-            fileSystemId: props.fileSystem.fileSystemId,
-            transitEncryption: "ENABLED",
-            authorizationConfig: {
-              accessPointId: accessPoint.accessPointId,
-              iam: "ENABLED",
+      runtimePlatform: isWindows
+        ? {
+            operatingSystemFamily: ecs.OperatingSystemFamily.WINDOWS_SERVER_2022_CORE,
+            cpuArchitecture: ecs.CpuArchitecture.X86_64,
+          }
+        : undefined,
+      volumes: accessPoint
+        ? [
+            {
+              name: "openclaw-state",
+              efsVolumeConfiguration: {
+                fileSystemId: props.fileSystem.fileSystemId,
+                transitEncryption: "ENABLED",
+                authorizationConfig: {
+                  accessPointId: accessPoint.accessPointId,
+                  iam: "ENABLED",
+                },
+              },
             },
-          },
-        },
-      ],
+          ]
+        : undefined,
     });
 
     const agentsDoc = readOptionalFileIfExists(props.agent.openclaw.agentsPromptPath);
@@ -207,6 +231,15 @@ export class AgentFargateStack extends cdk.Stack {
       throw new Error(`No directEnvKeys configured for agent '${props.agent.id}'`);
     }
 
+    const rdpConfig = props.agent.remoteAccess?.rdp;
+    const rdpEnabled = isWindows && Boolean(rdpConfig?.enabled);
+    const rdpPort = rdpConfig?.port ?? 3389;
+
+    const portMappings: ecs.PortMapping[] = [{ containerPort: 18789, protocol: ecs.Protocol.TCP }];
+    if (rdpEnabled) {
+      portMappings.push({ containerPort: rdpPort, protocol: ecs.Protocol.TCP });
+    }
+
     const container = taskDefinition.addContainer(`${prefix}-container`, {
       image: ecs.ContainerImage.fromEcrRepository(repository, props.imageTag),
       essential: true,
@@ -214,7 +247,7 @@ export class AgentFargateStack extends cdk.Stack {
         logGroup,
         streamPrefix: props.agent.id,
       }),
-      portMappings: [{ containerPort: 18789, protocol: ecs.Protocol.TCP }],
+      portMappings,
       secrets: allSecretMap,
       interactive: true,
       environment: {
@@ -224,8 +257,11 @@ export class AgentFargateStack extends cdk.Stack {
         OPENCLAW_MODEL_PROVIDER: props.agent.model.provider,
         OPENCLAW_MODEL: props.agent.model.model,
         OPENCLAW_MODEL_FALLBACKS: (props.agent.model.fallbacks ?? []).join(","),
-        OPENCLAW_STATE_DIR: "/home/node/.openclaw",
-        OPENCLAW_CONFIG_PATH: "/home/node/.openclaw/openclaw.json",
+        OPENCLAW_STATE_DIR: stateDir,
+        OPENCLAW_CONFIG_PATH: configPath,
+        OPENCLAW_CODEX_CONFIG_PATH: codexConfigPath,
+        OPENCLAW_AWS_CONFIG_PATH: awsConfigPath,
+        AWS_SHARED_CREDENTIALS_FILE: awsCredentialsPath,
         OPENCLAW_GATEWAY_BIND: "lan",
         OPENCLAW_GATEWAY_PORT: "18789",
         AWS_REGION: cdk.Stack.of(this).region,
@@ -250,11 +286,29 @@ export class AgentFargateStack extends cdk.Stack {
       },
     });
 
-    container.addMountPoints({
-      sourceVolume: "openclaw-state",
-      containerPath: "/home/node/.openclaw",
-      readOnly: false,
+    if (accessPoint) {
+      container.addMountPoints({
+        sourceVolume: "openclaw-state",
+        containerPath: "/home/node/.openclaw",
+        readOnly: false,
+      });
+    }
+
+    const agentAccessSecurityGroup = new ec2.SecurityGroup(this, `${prefix}-agent-access-sg`, {
+      vpc: props.vpc,
+      description: `Agent access SG for ${props.agent.id}`,
+      allowAllOutbound: true,
     });
+
+    if (rdpEnabled) {
+      for (const cidr of rdpConfig?.allowedCidrs ?? []) {
+        const trimmed = cidr.trim();
+        if (trimmed.length === 0) {
+          continue;
+        }
+        agentAccessSecurityGroup.addIngressRule(ec2.Peer.ipv4(trimmed), ec2.Port.tcp(rdpPort), "RDP access");
+      }
+    }
 
     const subnets = props.vpc.publicSubnets.length > 0 ? props.vpc.publicSubnets : props.vpc.privateSubnets;
 
@@ -266,7 +320,7 @@ export class AgentFargateStack extends cdk.Stack {
       healthCheckGracePeriod: cdk.Duration.minutes(10),
       assignPublicIp: true,
       vpcSubnets: { subnets },
-      securityGroups: [props.taskSecurityGroup],
+      securityGroups: [props.taskSecurityGroup, agentAccessSecurityGroup],
       enableExecuteCommand: true,
       circuitBreaker: {
         enable: true,
@@ -302,6 +356,15 @@ export class AgentFargateStack extends cdk.Stack {
       project: props.project,
       service: props.agent.id,
       environment: props.environment,
+    });
+
+    addStandardTags(agentAccessSecurityGroup, {
+      project: props.project,
+      service: props.agent.id,
+      environment: props.environment,
+      customTags: {
+        ResourceType: "agent-access-security-group",
+      },
     });
 
     new cdk.CfnOutput(this, `${prefix}-service-name`, {

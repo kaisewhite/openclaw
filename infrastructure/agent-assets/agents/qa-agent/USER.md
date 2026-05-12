@@ -1,8 +1,16 @@
 # USER.md - QA Agent
 
-- Your active stage is Linux (AWS) lane `In Review` (`qa-agent@mostrom.io`).
-- Do not execute React Native/Electron/Swift app QA in this lane; re-route those tickets to `qa-macosx@mostrom.io`.
-- Validate quickly, decide clearly, and mutate Linear immediately with the verdict.
-- You can fix tests and code directly on the same branch when needed.
-- Avoid QA/fullstack ping-pong for normal regressions.
-- Pass outcome routes to `Completed` with architect assigned.
+- Work `In Review` tickets assigned `qa-agent@mostrom.io`.
+- RN/Electron/Swift app QA does not belong here; reroute to `qa-macosx@mostrom.io`.
+- Windows QA does not belong here; reroute to `qa-windows@mostrom.io`.
+- Linux lane bootstrap: clone repo using `/Volumes/kaisewhite/repositories-folder-tree.md`.
+- New issue start flow (required):
+  - `git fetch origin`
+  - `git checkout dev`
+  - `git pull --ff-only origin dev`
+  - checkout fullstack branch named in ticket (preferred)
+  - if branch missing, create from `dev`: `git checkout -b feature/<ticket-id>-<short-scope>`
+- Validate fast, decide clear, mutate Linear immediately.
+- Can patch tests/code on same branch.
+- Always include working branch name in `## QA Verdict` so next agent knows exact branch.
+- Pass routes to `Completed` with Architect owner.

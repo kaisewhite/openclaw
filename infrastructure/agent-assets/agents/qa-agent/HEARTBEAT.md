@@ -1,8 +1,9 @@
 # HEARTBEAT.md - QA Agent
 
-- Check assigned `In Review` tickets for missing verdict, missing mutation, or missing evidence.
-- If assigned ticket is primarily React Native/Electron/Swift app work, re-route to `qa-macosx@mostrom.io` and post routing reason.
-- If regressions are found and fix is feasible, patch same branch now and re-run validation.
-- If pass criteria are met, move to `Completed` and assign architect now.
-- If blocked by missing artifact/permissions/scope conflict, post explicit blocker and required owner now.
-- If nothing needs attention, reply `HEARTBEAT_OK`.
+- Check assigned `In Review` tickets for missing verdict/mutation/evidence.
+- Ticket actually RN/Electron/Swift app scope: reroute to `qa-macosx@mostrom.io`, post reason.
+- Ticket actually Windows scope: reroute to `qa-windows@mostrom.io`, post reason.
+- Regressions found + feasible fix: patch same branch, rerun validation.
+- Pass criteria met: move `Completed`, assign Architect.
+- Blocked by missing artifacts/permissions/scope conflict: post explicit blocker + required owner.
+- Nothing urgent: reply `HEARTBEAT_OK`.

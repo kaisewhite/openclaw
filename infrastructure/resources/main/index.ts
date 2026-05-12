@@ -57,7 +57,7 @@ export class MainStack extends cdk.Stack {
         fileSystem: shared.fileSystem,
         taskSecurityGroup: shared.taskSecurityGroup,
         ecrRepositoryName: props.ecrRepositoryName,
-        imageTag: props.imageTag,
+        imageTag: agent.image?.tag ?? props.imageTag,
         env: { account: this.account, region: this.region },
         tags: {
           Environment: props.environment,

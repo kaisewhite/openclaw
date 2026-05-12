@@ -48,7 +48,7 @@ Note:
 ## 5. Force New Deployments So Tasks Reload Secrets
 
 ```bash
-for svc in architect-agent fullstack-agent qa-agent pm-agent; do
+for svc in architect-agent fullstack-agent fullstack-windows qa-agent qa-windows pm-agent; do
   aws ecs update-service \
     --cluster openclaw \
     --service "$svc" \
@@ -67,7 +67,9 @@ Switch `AGENT=` to any of:
 
 - `architect-agent`
 - `fullstack-agent`
+- `fullstack-windows`
 - `qa-agent`
+- `qa-windows`
 - `pm-agent`
 
 ## 7. In-Container: Codex OAuth Onboarding

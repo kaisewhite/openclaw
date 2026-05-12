@@ -4,6 +4,8 @@ export interface AgentRuntimeConfig {
   cpu: number;
   memoryLimitMiB: number;
   desiredCount: number;
+  osFamily?: "linux" | "windows";
+  cpuArchitecture?: "x86_64" | "arm64";
 }
 
 export interface AgentModelConfig {
@@ -46,6 +48,16 @@ export interface Agent {
   model: AgentModelConfig;
   openclaw: AgentOpenclawConfig;
   secrets: AgentSecretsConfig;
+  image?: {
+    tag?: string;
+  };
+  remoteAccess?: {
+    rdp?: {
+      enabled?: boolean;
+      port?: number;
+      allowedCidrs?: string[];
+    };
+  };
 }
 
 export interface Project {
@@ -58,6 +70,7 @@ export interface Project {
 
 const GEMINI_PROVIDER = "google" as const;
 const GEMINI_DEFAULT_MODEL = "gemini-3-flash-preview" as const;
+const GEMMA4_DEFAULT_MODEL = "gemma-4" as const;
 const ANTHROPIC_PROVIDER = "anthropic" as const;
 const ANTHROPIC_BACKUP_MODEL = "anthropic/claude-3-7-sonnet-latest" as const;
 
@@ -90,6 +103,12 @@ const defaultPluginsOverrides = {
     },
   },
 } as const;
+
+const parseCsv = (value?: string): string[] =>
+  String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
 const defaultToolsOverrides = {
   tools: {
@@ -273,6 +292,8 @@ const buildDirectEnvKeys = (params: { provider: SupportedDirectEnvProvider; extr
   return [...new Set([...directEnvProviderKeys[provider], ...directEnvSharedKeys, ...extra])];
 };
 
+const windowsRdpAllowedCidrs = parseCsv(process.env.WINDOWS_AGENT_RDP_ALLOWED_CIDRS);
+
 export const project: Project = {
   name: "openclaw",
   envs: ["mgmt"],
@@ -391,6 +412,86 @@ export const project: Project = {
         directEnvKeys: buildDirectEnvKeys({
           provider: GEMINI_PROVIDER,
         }),
+      },
+    },
+    {
+      id: "fullstack-windows",
+      displayName: "Fullstack Windows Agent",
+      description: "Windows implementation and delivery agent",
+      runtime: {
+        cpu: 8192,
+        memoryLimitMiB: 16384,
+        desiredCount: 1,
+        osFamily: "windows",
+        cpuArchitecture: "x86_64",
+      },
+      model: {
+        provider: GEMINI_PROVIDER,
+        model: GEMMA4_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
+      },
+      openclaw: {
+        ...sharedPromptDocs,
+        ...agentPromptPaths("fullstack-windows"),
+        allowTools: ["*"],
+        denyTools: [],
+        configOverrides: defaultOpenclawOverrides,
+      },
+      secrets: {
+        secretName: "/openclaw/mgmt/agents/fullstack-windows",
+        directEnvKeys: buildDirectEnvKeys({
+          provider: GEMINI_PROVIDER,
+        }),
+      },
+      image: {
+        tag: "windows-latest",
+      },
+      remoteAccess: {
+        rdp: {
+          enabled: true,
+          port: 3389,
+          allowedCidrs: windowsRdpAllowedCidrs,
+        },
+      },
+    },
+    {
+      id: "qa-windows",
+      displayName: "QA Windows Agent",
+      description: "Windows QA and regression gate agent",
+      runtime: {
+        cpu: 8192,
+        memoryLimitMiB: 16384,
+        desiredCount: 1,
+        osFamily: "windows",
+        cpuArchitecture: "x86_64",
+      },
+      model: {
+        provider: GEMINI_PROVIDER,
+        model: GEMMA4_DEFAULT_MODEL,
+        fallbacks: [ANTHROPIC_BACKUP_MODEL],
+      },
+      openclaw: {
+        ...sharedPromptDocs,
+        ...agentPromptPaths("qa-windows"),
+        allowTools: ["*"],
+        denyTools: ["agentToAgent"],
+        configOverrides: defaultOpenclawOverrides,
+      },
+      secrets: {
+        secretName: "/openclaw/mgmt/agents/qa-windows",
+        directEnvKeys: buildDirectEnvKeys({
+          provider: GEMINI_PROVIDER,
+        }),
+      },
+      image: {
+        tag: "windows-latest",
+      },
+      remoteAccess: {
+        rdp: {
+          enabled: true,
+          port: 3389,
+          allowedCidrs: windowsRdpAllowedCidrs,
+        },
       },
     },
   ],

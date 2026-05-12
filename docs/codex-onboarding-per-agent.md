@@ -16,7 +16,9 @@ export CLUSTER_NAME=openclaw
 AGENTS=(
   architect-agent
   fullstack-agent
+  fullstack-windows
   qa-agent
+  qa-windows
   pm-agent
 )
 ```
@@ -56,7 +58,18 @@ aws ecs execute-command \
   --command "/bin/bash"
 ```
 
-Repeat this for each agent in `AGENTS`.
+Repeat this for each Linux agent in `AGENTS`.
+
+For Windows agents (`fullstack-windows`, `qa-windows`), use:
+
+```bash
+aws ecs execute-command \
+  --cluster "$CLUSTER_NAME" \
+  --task "$TASK_ARN" \
+  --container "mgmt-${AGENT}-container" \
+  --interactive \
+  --command "powershell.exe"
+```
 
 ## 5. In-Container Codex Setup
 
