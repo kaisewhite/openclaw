@@ -419,7 +419,7 @@ export const project: Project = {
       displayName: "Fullstack Windows Agent",
       description: "Windows implementation and delivery agent",
       runtime: {
-        cpu: 8192,
+        cpu: 4096,
         memoryLimitMiB: 16384,
         desiredCount: 1,
         osFamily: "windows",
@@ -459,7 +459,7 @@ export const project: Project = {
       displayName: "QA Windows Agent",
       description: "Windows QA and regression gate agent",
       runtime: {
-        cpu: 8192,
+        cpu: 4096,
         memoryLimitMiB: 16384,
         desiredCount: 1,
         osFamily: "windows",

@@ -2,7 +2,7 @@
 import * as cdk from "aws-cdk-lib";
 import { OpenclawStack } from "../lib/openclaw-stack";
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const mgmt = { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION };
 

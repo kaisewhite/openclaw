@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 import { MainStack } from "../resources/main";
 import { DevOpsStack } from "../resources/shared";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const deploymentEnv = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
